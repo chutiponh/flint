@@ -26,16 +26,15 @@ final class WindowCoordinator {
     }
 
     /// Call to open the Preferences window (INFRA-12).
-    /// openSettings() is broken on macOS 14 with .accessory policy — use this instead.
+    /// openSettings() is broken on macOS 14 with .accessory policy (Pitfall #2).
+    /// Instead: setActivationPolicy(.regular) → activate → sendAction(showPreferences) → window appears in front.
     func openPreferences() {
         windowCount += 1
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            NotificationCenter.default.post(
-                name: Notification.Name("com.lathe.openPreferences"),
-                object: nil
-            )
+            // showPreferencesWindow: is the action that SwiftUI's Settings scene responds to
+            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
         }
     }
 

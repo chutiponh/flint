@@ -5,6 +5,9 @@
 //
 // NOTE: MenuBarExtraAccess.menuBarExtraAccess() is an extension on MenuBarExtra, not Scene.
 // It must be applied BEFORE .menuBarExtraStyle() — the order matters.
+//
+// NOTE: openSettings() is broken on macOS 14 with .accessory policy (Pitfall #2).
+// MenuBarPopoverView handles ⌘, via WindowCoordinator.openPreferences() instead.
 
 import SwiftUI
 import MenuBarExtraAccess
@@ -30,6 +33,7 @@ struct LatheApp: App {
                 .environment(prefs)
                 .environment(clipboard)
                 .environment(toolRegistry)
+                .preferredColorScheme(prefs.theme.colorScheme)  // INFRA-14 live theme
         }
         .menuBarExtraAccess(isPresented: $clipboard.isPopoverPresented)
         .menuBarExtraStyle(.window)
@@ -41,35 +45,19 @@ struct LatheApp: App {
                 .environment(prefs)
                 .environment(clipboard)
                 .environment(toolRegistry)
+                .preferredColorScheme(prefs.theme.colorScheme)  // INFRA-14
         }
         .defaultSize(width: 900, height: 650)
         .commandsRemoved()
 
-        // MARK: - Preferences (INFRA-12)
-        // openSettings() is broken on macOS 14 with .accessory — use WindowCoordinator dance.
+        // MARK: - Preferences Window (INFRA-12)
+        // openSettings() is broken on macOS 14 with .accessory — WindowCoordinator opens it.
+        // The Settings scene still must be declared for SettingsLink to resolve.
         Settings {
             PreferencesView()
                 .environment(prefs)
                 .environment(hotkeyManager)
+                .preferredColorScheme(prefs.theme.colorScheme)  // INFRA-14
         }
-    }
-}
-
-// MARK: - Preferences View (Placeholder — fleshed out in 01-07)
-
-struct PreferencesView: View {
-    @Environment(PreferencesStore.self) private var prefs
-
-    var body: some View {
-        Form {
-            Section("General") {
-                Text("Preferences — more options coming soon.")
-                    .foregroundColor(.secondary)
-            }
-        }
-        .formStyle(.grouped)
-        .frame(minWidth: 400, minHeight: 300)
-        .padding()
-        .navigationTitle("Preferences")
     }
 }

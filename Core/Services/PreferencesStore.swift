@@ -1,15 +1,19 @@
 // Core/Services/PreferencesStore.swift
 // @Observable UserDefaults wrapper for app preferences.
-// SECURITY: Never store secrets here (UserDefaults may be iCloud-backed).
-// Launch-at-login via SMAppService added in plan 01-07.
+// SECURITY (T-07-ID): Never store secrets here — UserDefaults may be iCloud-backed.
+// Launch-at-login via SMAppService added in plan 01-07 (INFRA-13).
 
 import Foundation
 import Observation
+import ServiceManagement
 
 @Observable
 final class PreferencesStore {
-    // Pinned tool IDs — D-13 default order: JSON, Base64, JWT, URL, Timestamp, UUID
-    // INFRA-11: ordered, persisted in UserDefaults, max 6 tools.
+
+    // MARK: - Pinned Tool IDs (INFRA-11)
+
+    // D-13 default order: JSON, Base64, JWT, URL, Timestamp, UUID
+    // Ordered, persisted in UserDefaults, max 6 tools.
     var pinnedToolIds: [String] {
         get { defaults.stringArray(forKey: Keys.pinnedToolIds) ?? Self.defaultPinnedToolIds }
         set { defaults.set(newValue, forKey: Keys.pinnedToolIds) }
@@ -39,23 +43,157 @@ final class PreferencesStore {
         pinnedToolIds.removeAll { $0 == id }
     }
 
-    // Global hotkey (stored as KeyboardShortcuts name — HotkeyManager owns registration)
-    // Stored separately by KeyboardShortcuts library in UserDefaults
+    // MARK: - Launch at Login (INFRA-13)
+    // Uses SMAppService.mainApp — Apple-sanctioned API for macOS 13+.
+    // macOS shows a system notification on change (T-07-SC accepted risk).
 
-    // Whether clipboard auto-detection is enabled
+    var launchAtLogin: Bool {
+        get { SMAppService.mainApp.status == .enabled }
+        set {
+            do {
+                if newValue {
+                    try SMAppService.mainApp.register()
+                } else {
+                    try SMAppService.mainApp.unregister()
+                }
+            } catch {
+                // SMAppService errors are non-fatal — user can re-toggle.
+                // Errors include: notFound (bundle lacks Login Item target), permissionDenied.
+                print("[PreferencesStore] SMAppService error: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    // MARK: - Show in Dock (INFRA-13)
+    // When true, overrides the .accessory policy to keep the Dock icon visible persistently.
+    // WindowCoordinator still manages per-window toggles; this is the persistent preference.
+
+    var showInDock: Bool {
+        get { defaults.object(forKey: Keys.showInDock) as? Bool ?? false }
+        set { defaults.set(newValue, forKey: Keys.showInDock) }
+    }
+
+    // MARK: - Default Open Mode (INFRA-13)
+    // Whether tools open in the popover or detach to the workspace window by default.
+
+    enum OpenMode: String, CaseIterable, Identifiable {
+        case popover = "popover"
+        case window = "window"
+        var id: String { rawValue }
+        var label: String {
+            switch self {
+            case .popover: return "Popover (default)"
+            case .window: return "Workspace Window"
+            }
+        }
+    }
+
+    var defaultOpenMode: OpenMode {
+        get {
+            guard let raw = defaults.string(forKey: Keys.defaultOpenMode),
+                  let mode = OpenMode(rawValue: raw) else { return .popover }
+            return mode
+        }
+        set { defaults.set(newValue.rawValue, forKey: Keys.defaultOpenMode) }
+    }
+
+    // MARK: - Clipboard Auto-Detection (INFRA-13)
+    // Persisted preference — ClipboardDetector.isEnabled should read this at startup.
+
+    var clipboardAutoDetect: Bool {
+        get { defaults.object(forKey: Keys.clipboardAutoDetect) as? Bool ?? true }
+        set { defaults.set(newValue, forKey: Keys.clipboardAutoDetect) }
+    }
+
+    /// Legacy accessor (01-01 name) — delegates to clipboardAutoDetect.
     var clipboardDetectionEnabled: Bool {
-        get { defaults.object(forKey: Keys.clipboardDetectionEnabled) as? Bool ?? true }
-        set { defaults.set(newValue, forKey: Keys.clipboardDetectionEnabled) }
+        get { clipboardAutoDetect }
+        set { clipboardAutoDetect = newValue }
     }
 
-    // History item limit (default 100, max 100)
+    // MARK: - Theme (INFRA-14)
+
+    enum AppTheme: String, CaseIterable, Identifiable {
+        case system = "system"
+        case light = "light"
+        case dark = "dark"
+        var id: String { rawValue }
+        var label: String {
+            switch self {
+            case .system: return "System"
+            case .light: return "Light"
+            case .dark: return "Dark"
+            }
+        }
+        /// Maps to SwiftUI ColorScheme for the .preferredColorScheme() modifier.
+        var colorScheme: ColorScheme? {
+            switch self {
+            case .system: return nil
+            case .light: return .light
+            case .dark: return .dark
+            }
+        }
+    }
+
+    var theme: AppTheme {
+        get {
+            guard let raw = defaults.string(forKey: Keys.theme),
+                  let t = AppTheme(rawValue: raw) else { return .system }
+            return t
+        }
+        set { defaults.set(newValue.rawValue, forKey: Keys.theme) }
+    }
+
+    // MARK: - Code Font (INFRA-14)
+
+    /// Name of the preferred monospaced font for code editors.
+    /// Empty string = use system SF Mono (.monospaced design).
+    var codeFont: String {
+        get { defaults.string(forKey: Keys.codeFont) ?? "" }
+        set { defaults.set(newValue, forKey: Keys.codeFont) }
+    }
+
+    /// Code editor font size (INFRA-14). Range: 10–20pt.
+    var codeFontSize: Int {
+        get {
+            let stored = defaults.object(forKey: Keys.codeFontSize) as? Int ?? 13
+            return max(10, min(20, stored))
+        }
+        set { defaults.set(max(10, min(20, newValue)), forKey: Keys.codeFontSize) }
+    }
+
+    // MARK: - History Limit (INFRA-13)
+
+    /// Maximum number of unpinned history entries to retain. Clamped 10–100.
     var historyLimit: Int {
-        get { defaults.object(forKey: Keys.historyLimit) as? Int ?? 100 }
-        set { defaults.set(min(newValue, 100), forKey: Keys.historyLimit) }
+        get {
+            let stored = defaults.object(forKey: Keys.historyLimit) as? Int ?? 100
+            return max(10, min(100, stored))
+        }
+        set { defaults.set(max(10, min(100, newValue)), forKey: Keys.historyLimit) }
     }
 
-    // Appearance — follows system by default (managed by SwiftUI environment)
-    // Preferences view for theme selection added in 01-07.
+    // MARK: - Per-Tool Defaults
+
+    /// JSON Formatter: default indent size (2, 4, or 0 for tab)
+    var jsonDefaultIndent: Int {
+        get { defaults.object(forKey: Keys.jsonDefaultIndent) as? Int ?? 2 }
+        set { defaults.set(newValue, forKey: Keys.jsonDefaultIndent) }
+    }
+
+    /// Base64: default URL-safe mode
+    var base64UrlSafe: Bool {
+        get { defaults.object(forKey: Keys.base64UrlSafe) as? Bool ?? false }
+        set { defaults.set(newValue, forKey: Keys.base64UrlSafe) }
+    }
+
+    /// Hash Generator: default uppercase output
+    var hashUppercase: Bool {
+        get { defaults.object(forKey: Keys.hashUppercase) as? Bool ?? false }
+        set { defaults.set(newValue, forKey: Keys.hashUppercase) }
+    }
+
+    // MARK: - Private
 
     private let defaults = UserDefaults.standard
 
@@ -71,7 +209,19 @@ final class PreferencesStore {
 
     private enum Keys {
         static let pinnedToolIds = "lathe.pinnedToolIds"
-        static let clipboardDetectionEnabled = "lathe.clipboardDetectionEnabled"
+        static let clipboardAutoDetect = "lathe.clipboardAutoDetect"
         static let historyLimit = "lathe.historyLimit"
+        static let showInDock = "lathe.showInDock"
+        static let defaultOpenMode = "lathe.defaultOpenMode"
+        static let theme = "lathe.theme"
+        static let codeFont = "lathe.codeFont"
+        static let codeFontSize = "lathe.codeFontSize"
+        static let jsonDefaultIndent = "lathe.jsonDefaultIndent"
+        static let base64UrlSafe = "lathe.base64UrlSafe"
+        static let hashUppercase = "lathe.hashUppercase"
     }
 }
+
+// MARK: - ColorScheme Import
+
+import SwiftUI

@@ -170,10 +170,15 @@ struct MenuBarPopoverView: View {
                 .hidden()
 
                 // ⌘, — preferences (INFRA-12)
-                Button("Preferences") { openSettings() }
-                    .keyboardShortcut(",", modifiers: .command)
-                    .accessibilityHidden(true)
-                    .hidden()
+                // pitfall #2: openSettings() is broken on macOS 14 with .accessory.
+                // Use WindowCoordinator activation dance instead.
+                Button("Preferences") {
+                    WindowCoordinator.shared.openPreferences()
+                    clipboard.isPopoverPresented = false
+                }
+                .keyboardShortcut(",", modifiers: .command)
+                .accessibilityHidden(true)
+                .hidden()
 
                 // ⌘C — copy output (broadcast; system ⌘C handles text fields)
                 Button("Copy Output") {
