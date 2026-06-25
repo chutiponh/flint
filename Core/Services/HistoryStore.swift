@@ -193,12 +193,23 @@ final class HistoryStore {
     /// Uses parameterized binding — never interpolates user input into SQL.
     func searchAsync(_ query: String) async -> [HistoryEntry] {
         guard let queue = dbQueue, !query.isEmpty else { return search(query) }
-        let pattern = "%\(query)%"
+        // WR-05: escape LIKE metacharacters so '_' matches a literal underscore (not any character)
+        // and '%' matches a literal percent sign. The escape character '\' is itself escaped first.
+        // The ESCAPE clause below tells SQLite which character to use as the escape prefix.
+        let escaped = query
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "%", with: "\\%")
+            .replacingOccurrences(of: "_", with: "\\_")
+        let pattern = "%\(escaped)%"
         do {
             return try await queue.read { db in
                 // T-06-T: GRDB parameterized query interface — user input is bound, not interpolated
+                // WR-05: pass escape: "\\" so GRDB appends ESCAPE '\\' to the LIKE clause
                 try HistoryEntry
-                    .filter(Column("tool").like(pattern) || Column("input").like(pattern))
+                    .filter(
+                        Column("tool").like(pattern, escape: "\\") ||
+                        Column("input").like(pattern, escape: "\\")
+                    )
                     .order(Column("pinned").desc, Column("timestamp").desc)
                     .limit(50)
                     .fetchAll(db)
