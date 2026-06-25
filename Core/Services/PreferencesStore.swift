@@ -9,9 +9,34 @@ import Observation
 @Observable
 final class PreferencesStore {
     // Pinned tool IDs — D-13 default order: JSON, Base64, JWT, URL, Timestamp, UUID
+    // INFRA-11: ordered, persisted in UserDefaults, max 6 tools.
     var pinnedToolIds: [String] {
         get { defaults.stringArray(forKey: Keys.pinnedToolIds) ?? Self.defaultPinnedToolIds }
         set { defaults.set(newValue, forKey: Keys.pinnedToolIds) }
+    }
+
+    /// Alias with canonical casing (matching PLAN.md interface spec).
+    var pinnedToolIDs: [String] {
+        get { pinnedToolIds }
+        set { pinnedToolIds = newValue }
+    }
+
+    /// Move a pinned tool from one position to another and persist. (INFRA-11 drag-to-reorder)
+    func movePinnedTool(from source: IndexSet, to destination: Int) {
+        var ids = pinnedToolIds
+        ids.move(fromOffsets: source, toOffset: destination)
+        pinnedToolIds = ids
+    }
+
+    /// Add a tool to pinned list (max 6). No-op if already pinned or at cap.
+    func pinTool(_ id: String) {
+        guard !pinnedToolIds.contains(id), pinnedToolIds.count < 6 else { return }
+        pinnedToolIds.append(id)
+    }
+
+    /// Remove a tool from pinned list.
+    func unpinTool(_ id: String) {
+        pinnedToolIds.removeAll { $0 == id }
     }
 
     // Global hotkey (stored as KeyboardShortcuts name — HotkeyManager owns registration)
