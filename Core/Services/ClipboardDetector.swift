@@ -61,6 +61,12 @@ final class ClipboardDetector {
         checkPasteboard(force: false)
     }
 
+    /// Manually trigger clipboard detection — used by the ⌘⇧V paste-and-detect shortcut (INFRA-16).
+    /// Reads the current pasteboard contents and fires detection regardless of change-count delta.
+    func triggerDetect() {
+        checkPasteboard(force: true)
+    }
+
     private func checkPasteboard(force: Bool) {
         let current = NSPasteboard.general.changeCount
         guard force || current != lastChangeCount else { return }

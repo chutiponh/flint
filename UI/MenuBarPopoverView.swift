@@ -9,6 +9,7 @@
 //   ⌘] — next tool in registry
 //   ⌘[ — previous tool in registry
 //   ⌘Delete — clear input (broadcast via .clearInput notification)
+//   ⌘⇧V — paste-and-detect (reads clipboard, triggers detection banner)
 //   Esc — two-stage: back to launcher / close popover (D-03)
 //   ⌘⇧Space — open/focus popover (KeyboardShortcuts, wired in HotkeyManager)
 // Source: RESEARCH.md Pattern 1 + UI-SPEC.md § "Popover Layout"
@@ -27,6 +28,9 @@ extension Notification.Name {
     /// Broadcast by HotkeyManager when ⌘⇧Space fires (open/focus popover).
     /// Already defined in HotkeyManager.swift — re-exported here for documentation.
     // static let showPopover = Notification.Name("lathe.showPopover") // defined in HotkeyManager
+    /// Broadcast by MenuBarPopoverView when the user presses ⌘⇧V (paste-and-detect).
+    /// Triggers immediate clipboard detection and shows the DetectionBannerView (INFRA-16).
+    static let pasteAndDetect = Notification.Name("lathe.pasteAndDetect")
 }
 
 /// Navigation state for the popover.
@@ -184,11 +188,23 @@ struct MenuBarPopoverView: View {
                 .accessibilityHidden(true)
                 .hidden()
 
-                // ⌘C — copy output (broadcast; system ⌘C handles text fields)
+                // ⌘⇧C — copy output (broadcast; system ⌘C handles text fields)
                 Button("Copy Output") {
                     NotificationCenter.default.post(name: .copyOutput, object: nil)
                 }
                 .keyboardShortcut("c", modifiers: [.command, .shift])
+                .accessibilityHidden(true)
+                .hidden()
+
+                // ⌘⇧V — paste-and-detect (INFRA-16)
+                // Reads the current clipboard and triggers detection regardless of change-count.
+                // Resets dismissedDetection so the banner re-appears even if the user had closed it.
+                // Works while the popover is open (isPopoverPresented is true at this point).
+                Button("Paste and Detect") {
+                    dismissedDetection = false
+                    clipboard.triggerDetect()
+                }
+                .keyboardShortcut("v", modifiers: [.command, .shift])
                 .accessibilityHidden(true)
                 .hidden()
             }
