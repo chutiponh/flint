@@ -10,7 +10,7 @@
 ### Infrastructure (INFRA)
 
 - [x] **INFRA-01**: App lives in the menubar via MenuBarExtra and opens a compact popover launcher (~480×600)
-- [ ] **INFRA-02**: User can detach a tool into a resizable workspace window (min 800×600); tool remembers its last mode
+- [x] **INFRA-02**: User can detach a tool into a resizable workspace window (min 800×600); tool remembers its last mode
 - [x] **INFRA-03**: A `ToolDefinition`/`ToolRegistry` abstraction enumerates all tools uniformly (id, name, category, keywords, SF Symbol, detection predicate, view factory) — single source for launcher, search, detection, and services routing
 - [x] **INFRA-04**: User can open/focus the app from any app via a global hotkey (`⌘⇧Space`, configurable) with no Accessibility permission prompt
 - [x] **INFRA-05**: On focus, app auto-detects clipboard content and shows a non-destructive suggestion banner ("Detected: JWT — Open JWT Decoder?") that the user can accept or dismiss
@@ -20,10 +20,10 @@
 - [x] **INFRA-09**: History never persists user secrets (JWT HMAC verification keys, HMAC hash keys are excluded from the store by schema design)
 - [x] **INFRA-10**: Global fuzzy search spans tool names, descriptions, and history, and is keyboard-navigable (↑↓, Enter)
 - [x] **INFRA-11**: User can pin up to 6 tools to the popover quick-access bar (drag-to-reorder); ships with sensible defaults
-- [ ] **INFRA-12**: Preferences window (`⌘,`) covers General, Appearance, History, and per-tool defaults
-- [ ] **INFRA-13**: Preferences settings work: launch at login (SMAppService), show-in-Dock toggle, default open mode, clipboard auto-detect on/off, theme, code font, font size, history limits
+- [x] **INFRA-12**: Preferences window (`⌘,`) covers General, Appearance, History, and per-tool defaults
+- [x] **INFRA-13**: Preferences settings work: launch at login (SMAppService), show-in-Dock toggle, default open mode, clipboard auto-detect on/off, theme, code font, font size, history limits
 - [x] **INFRA-14**: App fully supports Light/Dark mode and system accent color with no visual artifacts
-- [ ] **INFRA-15**: All interactive elements have VoiceOver labels and support Dynamic Type scaling
+- [x] **INFRA-15**: All interactive elements have VoiceOver labels and support Dynamic Type scaling
 - [x] **INFRA-16**: Documented global keyboard shortcuts work (open, prefs, close, next/prev tool, focus search, copy output, paste-and-detect, clear input, toggle history, new window)
 - [x] **INFRA-17**: No tool crashes on malformed, oversized, or invalid-UTF-8 input; all inputs are validated gracefully
 - [x] **INFRA-18**: App meets performance targets — cold start < 500ms, hotkey-to-popover < 200ms, < 100MB RAM under normal use
@@ -164,7 +164,7 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | INFRA-01 | Phase 1 | Complete |
-| INFRA-02 | Phase 1 | Pending |
+| INFRA-02 | Phase 1 | Complete |
 | INFRA-03 | Phase 1 | Complete |
 | INFRA-04 | Phase 1 | Complete |
 | INFRA-05 | Phase 1 | Complete |
@@ -174,10 +174,10 @@
 | INFRA-09 | Phase 1 | Complete |
 | INFRA-10 | Phase 1 | Complete |
 | INFRA-11 | Phase 1 | Complete |
-| INFRA-12 | Phase 1 | Pending |
-| INFRA-13 | Phase 1 | Pending |
+| INFRA-12 | Phase 1 | Complete |
+| INFRA-13 | Phase 1 | Complete |
 | INFRA-14 | Phase 1 | Complete |
-| INFRA-15 | Phase 1 | Pending |
+| INFRA-15 | Phase 1 | Complete |
 | INFRA-16 | Phase 1 | Complete |
 | INFRA-17 | Phase 1 | Complete |
 | INFRA-18 | Phase 1 | Complete |

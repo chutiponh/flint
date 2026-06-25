@@ -12,7 +12,7 @@ Lathe ships in three coarse phases that mirror the PRD's validated delivery plan
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Infrastructure + Core Tools** - Full infra skeleton (ToolRegistry, HistoryStore, ClipboardDetector, HotkeyManager) plus JSON, Base64, URL, JWT, Timestamp, Hash, and UUID tools
+- [x] **Phase 1: Infrastructure + Core Tools** - Full infra skeleton (ToolRegistry, HistoryStore, ClipboardDetector, HotkeyManager) plus JSON, Base64, URL, JWT, Timestamp, Hash, and UUID tools (completed 2026-06-25)
 - [ ] **Phase 2: Extended Tools** - Regex, Color, Markdown, Number Base, and Text Diff tools with ChromaKit, HighlightSwift, and SwiftDiff added
 - [ ] **Phase 3: Polish & Distribution** - Services menu, drag-and-drop, signed/notarized DMG, Sparkle auto-update, and VoiceOver audit
 
@@ -37,7 +37,7 @@ Plans:
 - [x] 01-04-PLAN.md — Timestamp Converter + Hash Generator (chunked file hash, HMAC key-exclusion)
 - [x] 01-05-PLAN.md — UUID Generator/Inspector (v7 gated on package vetting)
 - [x] 01-06-PLAN.md — First-class History view + global fuzzy search + pin/reorder + keyboard shortcuts
-- [ ] 01-07-PLAN.md — Preferences + launch-at-login + workspace window + Light/Dark/VoiceOver/perf audit
+- [x] 01-07-PLAN.md — Preferences + launch-at-login + workspace window + Light/Dark/VoiceOver/perf audit
 **UI hint**: yes
 
 ### Phase 2: Extended Tools
@@ -74,6 +74,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Infrastructure + Core Tools | 6/7 | In Progress|  |
+| 1. Infrastructure + Core Tools | 7/7 | Complete   | 2026-06-25 |
 | 2. Extended Tools | 0/TBD | Not started | - |
 | 3. Polish & Distribution | 0/TBD | Not started | - |

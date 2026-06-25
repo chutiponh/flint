@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 01-04 (Timestamp + Hash tools)
-last_updated: "2026-06-25T15:14:13.844Z"
+status: verifying
+stopped_at: Task 4 checkpoint — performance running-app measurement awaiting human with Instruments
+last_updated: "2026-06-25T15:30:01.112Z"
 last_activity: 2026-06-25
 progress:
   total_phases: 3
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 7
-  completed_plans: 6
-  percent: 0
+  completed_plans: 7
+  percent: 33
 ---
 
 # Project State
@@ -27,10 +27,10 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 
 Phase: 01 (infrastructure-core-tools) — EXECUTING
 Plan: 7 of 7
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-06-25
 
-Progress: [█████████░] 86%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Progress: [█████████░] 86%
 | Phase 01-infrastructure-core-tools P04 | 32 minutes | 2 tasks | 13 files |
 | Phase 01-infrastructure-core-tools P05 | 25min | 2 tasks | 6 files |
 | Phase 01-infrastructure-core-tools P06 | 35 minutes | 3 tasks | 10 files |
+| Phase 01-infrastructure-core-tools P07 | 90min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,9 @@ Recent decisions affecting current work:
 - [Phase ?]: SHA-256 test vector corrected during execution — verified via shell sha256sum (not from memory)
 - [Phase ?]: CRC32 via import zlib — uLong/Bytef/crc32() require explicit zlib module not Foundation
 - [Phase ?]: Hash HMAC secret-exclusion: View-local @State in HashView, transient method param only — mirrors JWT pattern from 01-03 (INFRA-09)
+- [Phase ?]: WindowCoordinator activation dance for macOS 14 (openSettings broken with .accessory)
+- [Phase ?]: Task 3 a11y: automated checks pass; live VoiceOver/Light-Dark deferred to pre-release
+- [Phase ?]: Task 4 perf: source checks pass; Instruments measurement at human checkpoint
 
 ### Pending Todos
 
@@ -98,6 +102,6 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-06-25T15:14:13.835Z
-Stopped at: Completed 01-04 (Timestamp + Hash tools)
+Last session: 2026-06-25T15:29:58.674Z
+Stopped at: Task 4 checkpoint — performance running-app measurement awaiting human with Instruments
 Resume file: None
