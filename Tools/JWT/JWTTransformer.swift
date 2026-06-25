@@ -183,17 +183,16 @@ enum JWTTransformer {
 
         let key = SymmetricKey(data: keyData)
 
-        // CryptoKit constant-time comparison via Data(mac) == sigData (JWT-04, T-03-T)
+        // WR-01: Use CryptoKit's built-in constant-time isValidAuthenticationCode(_:authenticating:using:)
+        // instead of Data(mac) == sigData. Swift's Data.== performs an early-return byte comparison
+        // and is NOT constant-time. The CryptoKit API is timing-safe by design (JWT-04, T-03-T).
         switch algorithm {
         case "HS256":
-            let mac = HMAC<SHA256>.authenticationCode(for: messageData, using: key)
-            return Data(mac) == sigData
+            return HMAC<SHA256>.isValidAuthenticationCode(sigData, authenticating: messageData, using: key)
         case "HS384":
-            let mac = HMAC<SHA384>.authenticationCode(for: messageData, using: key)
-            return Data(mac) == sigData
+            return HMAC<SHA384>.isValidAuthenticationCode(sigData, authenticating: messageData, using: key)
         case "HS512":
-            let mac = HMAC<SHA512>.authenticationCode(for: messageData, using: key)
-            return Data(mac) == sigData
+            return HMAC<SHA512>.isValidAuthenticationCode(sigData, authenticating: messageData, using: key)
         default:
             return false
         }
