@@ -34,6 +34,10 @@ struct LatheApp: App {
                 .environment(clipboard)
                 .environment(toolRegistry)
                 .preferredColorScheme(prefs.theme.colorScheme)  // INFRA-14 live theme
+                // WR-04: sync historyLimit from PreferencesStore into HistoryStore whenever it changes
+                .onChange(of: prefs.historyLimit, initial: true) { _, newLimit in
+                    historyStore.historyLimit = newLimit
+                }
         }
         .menuBarExtraAccess(isPresented: $clipboard.isPopoverPresented)
         .menuBarExtraStyle(.window)

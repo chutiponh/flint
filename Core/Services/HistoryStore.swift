@@ -1,5 +1,5 @@
 // Core/Services/HistoryStore.swift
-// GRDB-backed SQLite history store for the last 100 transformations.
+// GRDB-backed SQLite history store for the last N transformations (N = PreferencesStore.historyLimit).
 // Opened off the main thread to protect the <500ms cold-start budget (Pitfall #6).
 // Source: RESEARCH.md Pattern 4 [VERIFIED]
 
@@ -13,6 +13,16 @@ final class HistoryStore {
     private(set) var dbQueue: DatabaseQueue?
     private(set) var entries: [HistoryEntry] = []
     private var observation: AnyDatabaseCancellable?
+
+    /// WR-04: configurable cap sourced from PreferencesStore.historyLimit.
+    /// HistoryStore does not retain a reference to PreferencesStore; callers update
+    /// this value whenever the preference changes (or LatheApp can wire it via onChange).
+    var historyLimit: Int = 100 {
+        didSet {
+            let clamped = max(10, min(100, historyLimit))
+            if clamped != historyLimit { historyLimit = clamped }
+        }
+    }
 
     init() {
         // Kick off async database initialization — does NOT block main thread (Pitfall #6)
@@ -66,21 +76,24 @@ final class HistoryStore {
 
     private func startObservation(queue: DatabaseQueue) {
         // ValueObservation is @MainActor-friendly in GRDB 7
-        // D-09: pinned items exempt from 100-item eviction cap
+        // D-09: pinned items exempt from the eviction cap
         observation = ValueObservation
             .tracking { db in
                 try HistoryEntry
                     .order(Column("pinned").desc, Column("timestamp").desc)
-                    .limit(200)   // fetch slightly over 100 for eviction pass
+                    .limit(200)   // fetch slightly over max historyLimit for in-memory pass
                     .fetchAll(db)
             }
             .start(in: queue,
                    scheduling: .async(onQueue: .main)) { error in
                 print("[HistoryStore] Observation error: \(error)")
             } onChange: { [weak self] allEntries in
-                // D-09: pinned items exempt from 100-item cap
+                guard let self else { return }
+                // WR-04: honour the configured limit instead of hardcoding 100
+                let limit = self.historyLimit
+                // D-09: pinned items exempt from the cap
                 let pinned = allEntries.filter { $0.pinned }
-                let unpinned = Array(allEntries.filter { !$0.pinned }.prefix(100))
+                let unpinned = Array(allEntries.filter { !$0.pinned }.prefix(limit))
                 let sorted = (pinned + unpinned).sorted {
                     if $0.pinned != $1.pinned { return $0.pinned }
                     return $0.timestamp > $1.timestamp
@@ -92,12 +105,27 @@ final class HistoryStore {
     }
 
     /// Save a history entry. Write is off-main, in GRDB's background queue.
+    /// WR-03: after inserting, evict unpinned rows beyond the configured cap so
+    ///        the SQLite database does not grow unbounded.
+    /// WR-04: eviction limit is read from self.historyLimit (default 100, wired to PreferencesStore).
     func save(_ entry: HistoryEntry) {
         guard let queue = dbQueue else { return }
+        let limit = historyLimit  // capture on MainActor before Task.detached
         Task.detached(priority: .utility) {
             do {
                 try await queue.write { db in
                     try entry.insert(db)
+                    // WR-03/WR-04: delete unpinned rows beyond the configured limit in one write
+                    try db.execute(sql: """
+                        DELETE FROM historyEntry
+                        WHERE pinned = 0
+                        AND id NOT IN (
+                            SELECT id FROM historyEntry
+                            WHERE pinned = 0
+                            ORDER BY timestamp DESC
+                            LIMIT \(limit)
+                        )
+                    """)
                 }
             } catch {
                 print("[HistoryStore] Save failed: \(error)")
