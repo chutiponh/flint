@@ -173,6 +173,20 @@ final class PreferencesStore {
         set { defaults.set(max(10, min(100, newValue)), forKey: Keys.historyLimit) }
     }
 
+    // MARK: - Workspace State (INFRA-02)
+
+    /// Last tool opened in the workspace window — restored on reopen.
+    var lastWorkspaceToolId: String? {
+        get { defaults.string(forKey: Keys.lastWorkspaceToolId) }
+        set {
+            if let id = newValue {
+                defaults.set(id, forKey: Keys.lastWorkspaceToolId)
+            } else {
+                defaults.removeObject(forKey: Keys.lastWorkspaceToolId)
+            }
+        }
+    }
+
     // MARK: - Per-Tool Defaults
 
     /// JSON Formatter: default indent size (2, 4, or 0 for tab)
@@ -219,6 +233,7 @@ final class PreferencesStore {
         static let jsonDefaultIndent = "lathe.jsonDefaultIndent"
         static let base64UrlSafe = "lathe.base64UrlSafe"
         static let hashUppercase = "lathe.hashUppercase"
+        static let lastWorkspaceToolId = "lathe.lastWorkspaceToolId"
     }
 }
 

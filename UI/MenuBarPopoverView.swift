@@ -139,8 +139,12 @@ struct MenuBarPopoverView: View {
                     .accessibilityHidden(true)
                     .hidden()
 
-                // ⌘N — open workspace window
+                // ⌘N — open workspace window (INFRA-02)
+                // WindowCoordinator.openWorkspace() handles the activation-policy dance (Pitfall #2).
+                // openWindow(id:) only works if the WindowGroup has already been loaded;
+                // WindowCoordinator posts .openWorkspace which the window listens to.
                 Button("New Window") {
+                    WindowCoordinator.shared.openWorkspace()
                     openWindow(id: "workspace")
                     clipboard.isPopoverPresented = false
                 }
