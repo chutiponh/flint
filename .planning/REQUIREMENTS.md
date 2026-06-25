@@ -163,28 +163,87 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01..18 | Phase 1 | Pending |
-| JSON-01..06 | Phase 1 | Pending |
-| B64-01..05 | Phase 1 | Pending |
-| URL-01..04 | Phase 1 | Pending |
-| JWT-01..06 | Phase 1 | Pending |
-| TS-01..05 | Phase 1 | Pending |
-| HASH-01..04 | Phase 1 | Pending |
-| UUID-01..04 | Phase 1 | Pending |
-| RGX-01..04 | Phase 2 | Pending |
-| CLR-01..04 | Phase 2 | Pending |
-| MD-01..04 | Phase 2 | Pending |
-| NUM-01..03 | Phase 2 | Pending |
-| DIFF-01..04 | Phase 2 | Pending |
-| DIST-01..04 | Phase 3 | Pending |
-
-> Per-ID rows are expanded by the roadmapper during roadmap creation.
+| INFRA-01 | Phase 1 | Pending |
+| INFRA-02 | Phase 1 | Pending |
+| INFRA-03 | Phase 1 | Pending |
+| INFRA-04 | Phase 1 | Pending |
+| INFRA-05 | Phase 1 | Pending |
+| INFRA-06 | Phase 1 | Pending |
+| INFRA-07 | Phase 1 | Pending |
+| INFRA-08 | Phase 1 | Pending |
+| INFRA-09 | Phase 1 | Pending |
+| INFRA-10 | Phase 1 | Pending |
+| INFRA-11 | Phase 1 | Pending |
+| INFRA-12 | Phase 1 | Pending |
+| INFRA-13 | Phase 1 | Pending |
+| INFRA-14 | Phase 1 | Pending |
+| INFRA-15 | Phase 1 | Pending |
+| INFRA-16 | Phase 1 | Pending |
+| INFRA-17 | Phase 1 | Pending |
+| INFRA-18 | Phase 1 | Pending |
+| JSON-01 | Phase 1 | Pending |
+| JSON-02 | Phase 1 | Pending |
+| JSON-03 | Phase 1 | Pending |
+| JSON-04 | Phase 1 | Pending |
+| JSON-05 | Phase 1 | Pending |
+| JSON-06 | Phase 1 | Pending |
+| B64-01 | Phase 1 | Pending |
+| B64-02 | Phase 1 | Pending |
+| B64-03 | Phase 1 | Pending |
+| B64-04 | Phase 1 | Pending |
+| B64-05 | Phase 1 | Pending |
+| URL-01 | Phase 1 | Pending |
+| URL-02 | Phase 1 | Pending |
+| URL-03 | Phase 1 | Pending |
+| URL-04 | Phase 1 | Pending |
+| JWT-01 | Phase 1 | Pending |
+| JWT-02 | Phase 1 | Pending |
+| JWT-03 | Phase 1 | Pending |
+| JWT-04 | Phase 1 | Pending |
+| JWT-05 | Phase 1 | Pending |
+| JWT-06 | Phase 1 | Pending |
+| TS-01 | Phase 1 | Pending |
+| TS-02 | Phase 1 | Pending |
+| TS-03 | Phase 1 | Pending |
+| TS-04 | Phase 1 | Pending |
+| TS-05 | Phase 1 | Pending |
+| HASH-01 | Phase 1 | Pending |
+| HASH-02 | Phase 1 | Pending |
+| HASH-03 | Phase 1 | Pending |
+| HASH-04 | Phase 1 | Pending |
+| UUID-01 | Phase 1 | Pending |
+| UUID-02 | Phase 1 | Pending |
+| UUID-03 | Phase 1 | Pending |
+| UUID-04 | Phase 1 | Pending |
+| RGX-01 | Phase 2 | Pending |
+| RGX-02 | Phase 2 | Pending |
+| RGX-03 | Phase 2 | Pending |
+| RGX-04 | Phase 2 | Pending |
+| CLR-01 | Phase 2 | Pending |
+| CLR-02 | Phase 2 | Pending |
+| CLR-03 | Phase 2 | Pending |
+| CLR-04 | Phase 2 | Pending |
+| MD-01 | Phase 2 | Pending |
+| MD-02 | Phase 2 | Pending |
+| MD-03 | Phase 2 | Pending |
+| MD-04 | Phase 2 | Pending |
+| NUM-01 | Phase 2 | Pending |
+| NUM-02 | Phase 2 | Pending |
+| NUM-03 | Phase 2 | Pending |
+| DIFF-01 | Phase 2 | Pending |
+| DIFF-02 | Phase 2 | Pending |
+| DIFF-03 | Phase 2 | Pending |
+| DIFF-04 | Phase 2 | Pending |
+| DIST-01 | Phase 3 | Pending |
+| DIST-02 | Phase 3 | Pending |
+| DIST-03 | Phase 3 | Pending |
+| DIST-04 | Phase 3 | Pending |
 
 **Coverage:**
-- v1 requirements: 67 total (18 INFRA + 30 core tools + 15 extended tools + 4 dist)
-- Mapped to phases: 67
-- Unmapped: 0 ✓
+- v1 requirements: 75 total (18 INFRA + 34 core tools + 19 extended tools + 4 dist)
+- Mapped to phases: 75
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-06-25*
-*Last updated: 2026-06-25 after initial definition*
+*Last updated: 2026-06-25 — traceability expanded to per-ID rows by roadmapper*
