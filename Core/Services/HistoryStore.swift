@@ -149,4 +149,40 @@ final class HistoryStore {
             }
         }
     }
+
+    /// Search history entries by tool name or input using GRDB LIKE.
+    /// T-06-T: GRDB parameterized query — never string-interpolated into SQL (INFRA-08).
+    func search(_ query: String) -> [HistoryEntry] {
+        guard !query.isEmpty else { return entries }
+        let q = query.lowercased()
+        return entries.filter {
+            $0.tool.localizedCaseInsensitiveContains(q) ||
+            $0.input.localizedCaseInsensitiveContains(q)
+        }
+    }
+
+    /// Async search using GRDB SQL LIKE for full text search (INFRA-08, T-06-T).
+    /// Uses parameterized binding — never interpolates user input into SQL.
+    func searchAsync(_ query: String) async -> [HistoryEntry] {
+        guard let queue = dbQueue, !query.isEmpty else { return search(query) }
+        let pattern = "%\(query)%"
+        do {
+            return try await queue.read { db in
+                // T-06-T: GRDB parameterized query interface — user input is bound, not interpolated
+                try HistoryEntry
+                    .filter(Column("tool").like(pattern) || Column("input").like(pattern))
+                    .order(Column("pinned").desc, Column("timestamp").desc)
+                    .limit(50)
+                    .fetchAll(db)
+            }
+        } catch {
+            print("[HistoryStore] searchAsync failed: \(error)")
+            return search(query)
+        }
+    }
+
+    /// Unpinned item count — used for "Clear N items?" confirmation copy.
+    var unpinnedCount: Int {
+        entries.filter { !$0.pinned }.count
+    }
 }

@@ -1,15 +1,40 @@
 // UI/MenuBarPopoverView.swift
 // The main 480×600 popover — search-first launcher (D-01).
 // Search bar autofocused, detection banner (D-04), 6 pinned tools (D-13), recent history.
+// Global keyboard shortcuts (INFRA-16):
+//   ⌘K / ⌘F — focus search bar
+//   ⌘H — toggle history panel (D-07)
+//   ⌘N — open workspace window (INFRA-02)
+//   ⌘, — preferences (INFRA-12)
+//   ⌘] — next tool in registry
+//   ⌘[ — previous tool in registry
+//   ⌘Delete — clear input (broadcast via .clearInput notification)
+//   Esc — two-stage: back to launcher / close popover (D-03)
+//   ⌘⇧Space — open/focus popover (KeyboardShortcuts, wired in HotkeyManager)
 // Source: RESEARCH.md Pattern 1 + UI-SPEC.md § "Popover Layout"
 
 import SwiftUI
+
+// MARK: - Notification Names (INFRA-16)
+
+extension Notification.Name {
+    /// Broadcast by MenuBarPopoverView when the user presses ⌘Delete (clear input).
+    /// Tool views observe this to clear their input field.
+    static let clearInput = Notification.Name("lathe.clearInput")
+    /// Broadcast by MenuBarPopoverView when the user presses ⌘C (copy output).
+    /// Tool views observe this to copy their primary output to the clipboard.
+    static let copyOutput = Notification.Name("lathe.copyOutput")
+    /// Broadcast by HotkeyManager when ⌘⇧Space fires (open/focus popover).
+    /// Already defined in HotkeyManager.swift — re-exported here for documentation.
+    // static let showPopover = Notification.Name("lathe.showPopover") // defined in HotkeyManager
+}
 
 /// Navigation state for the popover.
 enum PopoverNavigationState: Equatable {
     case root                        // launcher: search + pinned + recent history
     case tool(toolId: String)        // inside a tool view
     case searchResults(query: String) // showing search results
+    case history                     // D-07: first-class history view
 }
 
 struct MenuBarPopoverView: View {
@@ -17,6 +42,8 @@ struct MenuBarPopoverView: View {
     @Environment(ToolRegistry.self) private var toolRegistry
     @Environment(ClipboardDetector.self) private var clipboard
     @Environment(PreferencesStore.self) private var prefs
+    @Environment(\.openWindow) private var openWindow
+    @Environment(\.openSettings) private var openSettings
 
     @State private var searchText: String = ""
     @State private var navigationState: PopoverNavigationState = .root
@@ -50,7 +77,9 @@ struct MenuBarPopoverView: View {
 
             // Zone 3: Pinned tools row (D-13) — visible at root
             if navigationState == .root && searchText.isEmpty {
-                pinnedToolsRow
+                PinnedToolBarView(onSelectTool: { toolId in
+                    navigationState = .tool(toolId: toolId)
+                })
                 Divider()
             }
 
@@ -68,6 +97,9 @@ struct MenuBarPopoverView: View {
                 if case .searchResults = navigationState {
                     navigationState = .root
                 }
+            } else if newValue.trimmingCharacters(in: .whitespaces).lowercased() == "history" {
+                // D-07: "history" query opens the first-class history view
+                navigationState = .history
             } else {
                 navigationState = .searchResults(query: newValue)
             }
@@ -84,6 +116,114 @@ struct MenuBarPopoverView: View {
         // Handle hotkey notification (show popover)
         .onReceive(NotificationCenter.default.publisher(for: .showPopover)) { _ in
             clipboard.isPopoverPresented = true
+        }
+        // INFRA-16: Global keyboard shortcuts — wired via hidden overlay buttons in .background()
+        // ⌘H — toggle history panel (D-07)
+        .background(
+            Group {
+                // ⌘K — focus search
+                Button("Focus Search") { focusSearch() }
+                    .keyboardShortcut("k", modifiers: .command)
+                    .accessibilityHidden(true)
+                    .hidden()
+
+                // ⌘F — focus search (alternative)
+                Button("Find") { focusSearch() }
+                    .keyboardShortcut("f", modifiers: .command)
+                    .accessibilityHidden(true)
+                    .hidden()
+
+                // ⌘H — toggle history panel
+                Button("Toggle History") { toggleHistory() }
+                    .keyboardShortcut("h", modifiers: .command)
+                    .accessibilityHidden(true)
+                    .hidden()
+
+                // ⌘N — open workspace window
+                Button("New Window") {
+                    openWindow(id: "workspace")
+                    clipboard.isPopoverPresented = false
+                }
+                .keyboardShortcut("n", modifiers: .command)
+                .accessibilityHidden(true)
+                .hidden()
+
+                // ⌘] — next tool
+                Button("Next Tool") { navigateTool(direction: .next) }
+                    .keyboardShortcut("]", modifiers: .command)
+                    .accessibilityHidden(true)
+                    .hidden()
+
+                // ⌘[ — previous tool
+                Button("Previous Tool") { navigateTool(direction: .previous) }
+                    .keyboardShortcut("[", modifiers: .command)
+                    .accessibilityHidden(true)
+                    .hidden()
+
+                // ⌘Delete — clear input (broadcast to active tool)
+                Button("Clear Input") {
+                    NotificationCenter.default.post(name: .clearInput, object: nil)
+                    searchText = ""
+                }
+                .keyboardShortcut(.delete, modifiers: .command)
+                .accessibilityHidden(true)
+                .hidden()
+
+                // ⌘, — preferences (INFRA-12)
+                Button("Preferences") { openSettings() }
+                    .keyboardShortcut(",", modifiers: .command)
+                    .accessibilityHidden(true)
+                    .hidden()
+
+                // ⌘C — copy output (broadcast; system ⌘C handles text fields)
+                Button("Copy Output") {
+                    NotificationCenter.default.post(name: .copyOutput, object: nil)
+                }
+                .keyboardShortcut("c", modifiers: [.command, .shift])
+                .accessibilityHidden(true)
+                .hidden()
+            }
+        )
+    }
+
+    // MARK: - Keyboard Action Helpers (INFRA-16)
+
+    private func focusSearch() {
+        searchFocused = true
+        // If inside a tool, come back to root first so search is visible
+        if case .tool = navigationState {
+            navigationState = .root
+            searchText = ""
+        }
+    }
+
+    private func toggleHistory() {
+        if navigationState == .history {
+            navigationState = .root
+            searchText = ""
+        } else {
+            navigationState = .history
+        }
+    }
+
+    private enum ToolDirection { case next, previous }
+
+    private func navigateTool(direction: ToolDirection) {
+        let tools = toolRegistry.tools
+        guard !tools.isEmpty else { return }
+
+        if case .tool(let currentId) = navigationState {
+            guard let idx = tools.firstIndex(where: { $0.id == currentId }) else { return }
+            let newIdx: Int
+            switch direction {
+            case .next: newIdx = (idx + 1) % tools.count
+            case .previous: newIdx = (idx - 1 + tools.count) % tools.count
+            }
+            navigationState = .tool(toolId: tools[newIdx].id)
+        } else {
+            // Not in a tool yet — open first/last
+            let tool = direction == .next ? tools.first : tools.last
+            if let t = tool { navigationState = .tool(toolId: t.id) }
         }
     }
 
@@ -124,38 +264,6 @@ struct MenuBarPopoverView: View {
         .padding(.vertical, 10)
     }
 
-    // MARK: - Pinned Tools Row
-
-    private var pinnedToolsRow: some View {
-        let pinnedTools = prefs.pinnedToolIds.compactMap { id in
-            toolRegistry.tools.first { $0.id == id }
-        }
-
-        return ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 4) {
-                ForEach(pinnedTools) { tool in
-                    Button(action: {
-                        navigationState = .tool(toolId: tool.id)
-                    }) {
-                        VStack(spacing: 4) {
-                            Image(systemName: tool.sfSymbol)
-                                .font(.system(size: 24))
-                                .foregroundColor(.secondary)
-                                .frame(width: 40, height: 40)
-                        }
-                        .frame(width: 40, height: 40)
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(tool.name)
-                    .help(tool.name)
-                }
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-        }
-    }
-
     // MARK: - Body Content
 
     @ViewBuilder
@@ -166,7 +274,28 @@ struct MenuBarPopoverView: View {
             recentHistoryView
 
         case .searchResults(let query):
-            searchResultsView(query: query)
+            SearchView(
+                query: query,
+                onSelectTool: { toolId in
+                    navigationState = .tool(toolId: toolId)
+                    searchText = ""
+                },
+                onSelectHistoryEntry: { entry in
+                    navigationState = .tool(toolId: entry.tool)
+                    searchText = ""
+                },
+                onShowHistory: {
+                    navigationState = .history
+                }
+            )
+
+        case .history:
+            // D-07: First-class history view
+            HistoryPanelView(onRestoreEntry: { entry in
+                // D-08: restore input into matched tool; output always recomputed live
+                navigationState = .tool(toolId: entry.tool)
+                searchText = ""
+            })
 
         case .tool(let toolId):
             if let tool = toolRegistry.tools.first(where: { $0.id == toolId }) {
@@ -218,73 +347,6 @@ struct MenuBarPopoverView: View {
         }
     }
 
-    // MARK: - Search Results
-
-    private func searchResultsView(query: String) -> some View {
-        let toolResults = toolRegistry.search(query)
-        let historyResults = historyStore.entries.filter {
-            $0.tool.localizedCaseInsensitiveContains(query) ||
-            $0.input.localizedCaseInsensitiveContains(query) ||
-            $0.output.localizedCaseInsensitiveContains(query)
-        }
-
-        return Group {
-            if toolResults.isEmpty && historyResults.isEmpty {
-                ContentUnavailableView(
-                    "No results for \"\(query)\"",
-                    systemImage: "magnifyingglass",
-                    description: Text("No tools or history match your search.")
-                )
-            } else {
-                List {
-                    if !toolResults.isEmpty {
-                        Section("Tools") {
-                            ForEach(toolResults) { tool in
-                                Button(action: {
-                                    navigationState = .tool(toolId: tool.id)
-                                    searchText = ""
-                                }) {
-                                    HStack(spacing: 10) {
-                                        Image(systemName: tool.sfSymbol)
-                                            .foregroundColor(.accentColor)
-                                            .frame(width: 24)
-                                        VStack(alignment: .leading) {
-                                            Text(tool.name)
-                                                .font(.system(size: 13, weight: .semibold))
-                                            Text(tool.category.displayName)
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                        }
-                                    }
-                                    .padding(.vertical, 4)
-                                }
-                                .buttonStyle(.plain)
-                                .accessibilityLabel(tool.name)
-                            }
-                        }
-                    }
-
-                    if !historyResults.isEmpty {
-                        Section("History") {
-                            ForEach(historyResults.prefix(10), id: \.id) { entry in
-                                HistoryRowView(
-                                    entry: entry,
-                                    onOpen: {
-                                        navigationState = .tool(toolId: entry.tool)
-                                        searchText = ""
-                                    },
-                                    onPin: { historyStore.togglePin(entry: entry) },
-                                    onDelete: { historyStore.delete(entry: entry) }
-                                )
-                            }
-                        }
-                    }
-                }
-                .listStyle(.plain)
-            }
-        }
-    }
-
     // MARK: - Esc Handler (Two-Stage, D-03)
 
     private func handleEscape() {
@@ -299,50 +361,4 @@ struct MenuBarPopoverView: View {
     }
 }
 
-// MARK: - History Row View
-
-struct HistoryRowView: View {
-    let entry: HistoryEntry
-    let onOpen: () -> Void
-    let onPin: () -> Void
-    let onDelete: () -> Void
-
-    var body: some View {
-        HStack(spacing: 8) {
-            Button(action: onOpen) {
-                HStack(spacing: 8) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(entry.tool.replacingOccurrences(of: "-", with: " ").capitalized)
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.secondary)
-                        Text(String(entry.input.prefix(40)))
-                            .font(.system(size: 13, design: .monospaced))
-                            .foregroundColor(.primary)
-                            .lineLimit(1)
-                    }
-                    Spacer()
-                    Text(entry.timestamp, style: .relative)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("\(entry.tool), \(String(entry.input.prefix(40))), \(entry.pinned ? "pinned" : "not pinned")")
-
-            Button(action: onPin) {
-                Image(systemName: entry.pinned ? "pin.fill" : "pin")
-                    .foregroundColor(entry.pinned ? .accentColor : .secondary)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(entry.pinned ? "Unpin" : "Pin")
-
-            Button(action: onDelete) {
-                Image(systemName: "trash")
-                    .foregroundColor(.secondary)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Delete")
-        }
-        .padding(.vertical, 4)
-    }
-}
+// HistoryRowView is defined in UI/Components/HistoryRowView.swift

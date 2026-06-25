@@ -73,6 +73,12 @@
 		00110000000009C /* UUIDView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000009C /* UUIDView.swift */; };
 		00110000000009D /* UUIDTransformerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000009D /* UUIDTransformerTests.swift */; };
 		00110000000009E /* UUIDv7 in Frameworks */ = {isa = PBXBuildFile; productRef = 001300000000005 /* UUIDv7 */; };
+		0011000000000A1 /* HistoryRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000000A1 /* HistoryRowView.swift */; };
+		0011000000000A2 /* HistoryPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000000A2 /* HistoryPanelView.swift */; };
+		0011000000000A3 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000000A3 /* SearchView.swift */; };
+		0011000000000A4 /* PinnedToolBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000000A4 /* PinnedToolBarView.swift */; };
+		0011000000000A5 /* HistorySearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000000A5 /* HistorySearchTests.swift */; };
+		0011000000000A6 /* SearchResultsMerger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000000A6 /* SearchResultsMerger.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -140,6 +146,12 @@
 		0012000000009D /* UUIDTransformerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UUIDTransformerTests.swift; sourceTree = "<group>"; };
 		001200000000090 /* Lathe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lathe.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		001200000000091 /* LatheTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LatheTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0012000000000A1 /* HistoryRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryRowView.swift; sourceTree = "<group>"; };
+		0012000000000A2 /* HistoryPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryPanelView.swift; sourceTree = "<group>"; };
+		0012000000000A3 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
+		0012000000000A4 /* PinnedToolBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedToolBarView.swift; sourceTree = "<group>"; };
+		0012000000000A5 /* HistorySearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistorySearchTests.swift; sourceTree = "<group>"; };
+		0012000000000A6 /* SearchResultsMerger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultsMerger.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -222,6 +234,7 @@
 				001200000000009 /* ToolRegistry.swift */,
 				00120000000000A /* ClipboardDetector.swift */,
 				00120000000000B /* HotkeyManager.swift */,
+				0012000000000A6 /* SearchResultsMerger.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -332,6 +345,8 @@
 			children = (
 				00120000000000D /* MenuBarPopoverView.swift */,
 				00120000000000E /* MainWindowView.swift */,
+				0012000000000A2 /* HistoryPanelView.swift */,
+				0012000000000A3 /* SearchView.swift */,
 				001500000000010 /* Components */,
 			);
 			path = UI;
@@ -347,6 +362,8 @@
 				001200000000013 /* CodeDisplayView.swift */,
 				001200000000045 /* WarningBannerView.swift */,
 				001200000000085 /* ProgressHashView.swift */,
+				0012000000000A1 /* HistoryRowView.swift */,
+				0012000000000A4 /* PinnedToolBarView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -371,6 +388,7 @@
 				001200000000074 /* TimestampTransformerTests.swift */,
 				001200000000086 /* HashTransformerTests.swift */,
 				0012000000009D /* UUIDTransformerTests.swift */,
+				0012000000000A5 /* HistorySearchTests.swift */,
 			);
 			path = LatheTests;
 			sourceTree = "<group>";
@@ -548,6 +566,11 @@
 				00110000000009B /* UUIDViewModel.swift in Sources */,
 				00110000000009C /* UUIDView.swift in Sources */,
 				00110000000001D /* UUIDDefinition.swift in Sources */,
+				0011000000000A1 /* HistoryRowView.swift in Sources */,
+				0011000000000A2 /* HistoryPanelView.swift in Sources */,
+				0011000000000A3 /* SearchView.swift in Sources */,
+				0011000000000A4 /* PinnedToolBarView.swift in Sources */,
+				0011000000000A6 /* SearchResultsMerger.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -562,6 +585,7 @@
 				001100000000074 /* TimestampTransformerTests.swift in Sources */,
 				001100000000086 /* HashTransformerTests.swift in Sources */,
 				00110000000009D /* UUIDTransformerTests.swift in Sources */,
+				0011000000000A5 /* HistorySearchTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
