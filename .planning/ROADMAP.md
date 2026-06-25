@@ -29,7 +29,15 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. User can run all seven core tools (JSON Formatter, Base64, URL Encoder, JWT Decoder, Timestamp Converter, Hash Generator, UUID Generator) and each produces correct output on valid input and a graceful error message on malformed or oversized input — no crash in any case
   4. Every transformation is recorded in a searchable, re-openable history panel (last 100 items, persisted across restarts); HMAC and JWT secret keys are never written to history by schema design
   5. App cold-starts in under 500ms, stays under 100MB RAM under normal use, and all interactive elements have VoiceOver labels and support Light/Dark mode without visual artifacts
-**Plans**: TBD
+**Plans**: 7 plans (3 waves)
+Plans:
+- [ ] 01-01-PLAN.md — Walking Skeleton: frozen infra (registry/history/clipboard/hotkey/popover) + JSON Formatter integration test
+- [ ] 01-02-PLAN.md — Base64 + URL tools (encoding category)
+- [ ] 01-03-PLAN.md — JWT Decoder (base64url, expiry, HMAC verify, secret-exclusion)
+- [ ] 01-04-PLAN.md — Timestamp Converter + Hash Generator (chunked file hash, HMAC key-exclusion)
+- [ ] 01-05-PLAN.md — UUID Generator/Inspector (v7 gated on package vetting)
+- [ ] 01-06-PLAN.md — First-class History view + global fuzzy search + pin/reorder + keyboard shortcuts
+- [ ] 01-07-PLAN.md — Preferences + launch-at-login + workspace window + Light/Dark/VoiceOver/perf audit
 **UI hint**: yes
 
 ### Phase 2: Extended Tools
@@ -66,6 +74,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Infrastructure + Core Tools | 0/TBD | Not started | - |
+| 1. Infrastructure + Core Tools | 0/7 | Planned | - |
 | 2. Extended Tools | 0/TBD | Not started | - |
 | 3. Polish & Distribution | 0/TBD | Not started | - |
