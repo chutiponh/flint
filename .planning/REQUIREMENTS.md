@@ -63,18 +63,18 @@
 
 ### Core Tools — Timestamp (TS)
 
-- [ ] **TS-01**: User can convert a Unix timestamp (seconds or millis, auto-detected) to a human-readable date
-- [ ] **TS-02**: Tool shows the date across local, UTC, and user-configured additional timezones simultaneously
-- [ ] **TS-03**: User can reverse-convert a picked date/time to a Unix timestamp
-- [ ] **TS-04**: "Now" button inserts the current timestamp; relative time ("3 days ago", "in 2 hours") is shown
-- [ ] **TS-05**: User can output ISO 8601 format
+- [x] **TS-01**: User can convert a Unix timestamp (seconds or millis, auto-detected) to a human-readable date
+- [x] **TS-02**: Tool shows the date across local, UTC, and user-configured additional timezones simultaneously
+- [x] **TS-03**: User can reverse-convert a picked date/time to a Unix timestamp
+- [x] **TS-04**: "Now" button inserts the current timestamp; relative time ("3 days ago", "in 2 hours") is shown
+- [x] **TS-05**: User can output ISO 8601 format
 
 ### Core Tools — Hash (HASH)
 
-- [ ] **HASH-01**: User can hash text and show MD5, SHA-1, SHA-256, SHA-384, SHA-512, and CRC32 simultaneously
-- [ ] **HASH-02**: User can drop a file to hash it (shows file size + all hashes) without blocking the UI
-- [ ] **HASH-03**: HMAC mode adds a secret key for keyed hashes; the key is never written to history
-- [ ] **HASH-04**: User can toggle uppercase/lowercase output and copy any individual hash
+- [x] **HASH-01**: User can hash text and show MD5, SHA-1, SHA-256, SHA-384, SHA-512, and CRC32 simultaneously
+- [x] **HASH-02**: User can drop a file to hash it (shows file size + all hashes) without blocking the UI
+- [x] **HASH-03**: HMAC mode adds a secret key for keyed hashes; the key is never written to history
+- [x] **HASH-04**: User can toggle uppercase/lowercase output and copy any individual hash
 
 ### Core Tools — UUID (UUID)
 
@@ -202,15 +202,15 @@
 | JWT-04 | Phase 1 | Complete |
 | JWT-05 | Phase 1 | Complete |
 | JWT-06 | Phase 1 | Complete |
-| TS-01 | Phase 1 | Pending |
-| TS-02 | Phase 1 | Pending |
-| TS-03 | Phase 1 | Pending |
-| TS-04 | Phase 1 | Pending |
-| TS-05 | Phase 1 | Pending |
-| HASH-01 | Phase 1 | Pending |
-| HASH-02 | Phase 1 | Pending |
-| HASH-03 | Phase 1 | Pending |
-| HASH-04 | Phase 1 | Pending |
+| TS-01 | Phase 1 | Complete |
+| TS-02 | Phase 1 | Complete |
+| TS-03 | Phase 1 | Complete |
+| TS-04 | Phase 1 | Complete |
+| TS-05 | Phase 1 | Complete |
+| HASH-01 | Phase 1 | Complete |
+| HASH-02 | Phase 1 | Complete |
+| HASH-03 | Phase 1 | Complete |
+| HASH-04 | Phase 1 | Complete |
 | UUID-01 | Phase 1 | Pending |
 | UUID-02 | Phase 1 | Pending |
 | UUID-03 | Phase 1 | Pending |

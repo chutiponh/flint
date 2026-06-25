@@ -34,7 +34,7 @@ Plans:
 - [x] 01-01-PLAN.md — Walking Skeleton: frozen infra (registry/history/clipboard/hotkey/popover) + JSON Formatter integration test
 - [x] 01-02-PLAN.md — Base64 + URL tools (encoding category)
 - [x] 01-03-PLAN.md — JWT Decoder (base64url, expiry, HMAC verify, secret-exclusion)
-- [ ] 01-04-PLAN.md — Timestamp Converter + Hash Generator (chunked file hash, HMAC key-exclusion)
+- [x] 01-04-PLAN.md — Timestamp Converter + Hash Generator (chunked file hash, HMAC key-exclusion)
 - [ ] 01-05-PLAN.md — UUID Generator/Inspector (v7 gated on package vetting)
 - [ ] 01-06-PLAN.md — First-class History view + global fuzzy search + pin/reorder + keyboard shortcuts
 - [ ] 01-07-PLAN.md — Preferences + launch-at-login + workspace window + Light/Dark/VoiceOver/perf audit
@@ -74,6 +74,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Infrastructure + Core Tools | 3/7 | In Progress|  |
+| 1. Infrastructure + Core Tools | 4/7 | In Progress|  |
 | 2. Extended Tools | 0/TBD | Not started | - |
 | 3. Polish & Distribution | 0/TBD | Not started | - |

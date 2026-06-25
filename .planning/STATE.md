@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 1 UI-SPEC approved
-last_updated: "2026-06-25T14:22:06.054Z"
+stopped_at: Completed 01-04 (Timestamp + Hash tools)
+last_updated: "2026-06-25T14:37:42.795Z"
 last_activity: 2026-06-25
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 7
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 ## Current Position
 
 Phase: 01 (infrastructure-core-tools) — EXECUTING
-Plan: 4 of 7
+Plan: 5 of 7
 Status: Ready to execute
 Last activity: 2026-06-25
 
-Progress: [████░░░░░░] 43%
+Progress: [██████░░░░] 57%
 
 ## Performance Metrics
 
@@ -55,6 +55,7 @@ Progress: [████░░░░░░] 43%
 | Phase 01-infrastructure-core-tools P01 | 22 minutes | 3 tasks | 33 files |
 | Phase 01-infrastructure-core-tools P02 | 25min | 2 tasks | 10 files |
 | Phase 01-infrastructure-core-tools P03 | 28 minutes | 2 tasks | 7 files |
+| Phase 01-infrastructure-core-tools P04 | 32 minutes | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,9 @@ Recent decisions affecting current work:
 - [Pre-Phase 1]: ToolDefinition/ToolRegistry abstraction must be frozen before any tool work begins
 - [Pre-Phase 1]: History must exclude HMAC keys and JWT secrets by schema design from day one
 - [Pre-Phase 1]: JSON Formatter is the first tool — integration test proving the full pipeline before remaining 6 tools
+- [Phase ?]: SHA-256 test vector corrected during execution — verified via shell sha256sum (not from memory)
+- [Phase ?]: CRC32 via import zlib — uLong/Bytef/crc32() require explicit zlib module not Foundation
+- [Phase ?]: Hash HMAC secret-exclusion: View-local @State in HashView, transient method param only — mirrors JWT pattern from 01-03 (INFRA-09)
 
 ### Pending Todos
 
@@ -92,6 +96,6 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-06-25T14:22:06.046Z
-Stopped at: Phase 1 UI-SPEC approved
+Last session: 2026-06-25T14:37:42.787Z
+Stopped at: Completed 01-04 (Timestamp + Hash tools)
 Resume file: None
