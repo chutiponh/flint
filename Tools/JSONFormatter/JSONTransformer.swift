@@ -93,18 +93,28 @@ enum JSONTransformer {
 
     /// JSONSerialization always uses 2-space indent.
     /// This function converts 2-space to 4-space or tab as needed.
+    ///
+    /// CR-03: Operate only on leading whitespace per line — never touch characters
+    /// inside string values. The naive replacingOccurrences(of: "  ", with: "    ")
+    /// approach corrupts values containing consecutive spaces (e.g. "some  value").
     private static func applyIndent(_ str: String, indent: Int) -> String {
-        switch indent {
-        case 4:
-            // JSONSerialization uses 2-space — replace with 4-space
-            return str.replacingOccurrences(of: "  ", with: "    ")
-        case 0:
-            // Tab indent
-            return str.replacingOccurrences(of: "  ", with: "\t")
-        default:
-            // indent == 2 — keep JSONSerialization's default 2-space
-            return str
-        }
+        guard indent != 2 else { return str }
+        let lines = str.components(separatedBy: "\n")
+        return lines.map { line in
+            let leadingSpaces = line.prefix(while: { $0 == " " }).count
+            // JSONSerialization uses exactly 2 spaces per indent level
+            let level = leadingSpaces / 2
+            let newPrefix: String
+            switch indent {
+            case 4:
+                newPrefix = String(repeating: "    ", count: level)
+            case 0:
+                newPrefix = String(repeating: "\t", count: level)
+            default:
+                return line
+            }
+            return newPrefix + line.dropFirst(leadingSpaces)
+        }.joined(separator: "\n")
     }
 
     /// JSON-03: Extract line + column from NSError.

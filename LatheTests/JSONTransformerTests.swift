@@ -250,6 +250,57 @@ final class JSONTransformerTests: XCTestCase {
         XCTAssertEqual(orig["a"] as? Int, final_["a"] as? Int)
     }
 
+    // MARK: - CR-03: applyIndent must not corrupt string values with consecutive spaces
+
+    func testPrettyPrint_fourSpaceIndent_preservesConsecutiveSpacesInValues() throws {
+        // CR-03: a value containing two consecutive spaces must survive 4-space indent unchanged.
+        let input = #"{"key":"some  value"}"#
+        let result = JSONTransformer.prettyPrint(input, indent: 4)
+        guard case .success(let output) = result else {
+            XCTFail("Expected success, got \(result)")
+            return
+        }
+        // The value must be preserved exactly — "some  value" (two spaces), not "some    value"
+        XCTAssertTrue(output.contains("\"some  value\""),
+                      "4-space indent must not expand consecutive spaces inside string values. Output:\n\(output)")
+        // Verify indentation of structural lines is correct (4 spaces per level)
+        XCTAssertTrue(output.contains("    \"key\""),
+                      "Expected 4-space indent for keys. Output:\n\(output)")
+        // Output must still be valid JSON
+        XCTAssertNotNil(try? JSONSerialization.jsonObject(with: output.data(using: .utf8)!),
+                        "4-space-indented output must be valid JSON")
+    }
+
+    func testPrettyPrint_tabIndent_preservesConsecutiveSpacesInValues() throws {
+        // CR-03: same invariant with tab indent.
+        let input = #"{"key":"some  value"}"#
+        let result = JSONTransformer.prettyPrint(input, indent: 0)
+        guard case .success(let output) = result else {
+            XCTFail("Expected success, got \(result)")
+            return
+        }
+        XCTAssertTrue(output.contains("\"some  value\""),
+                      "Tab indent must not expand consecutive spaces inside string values. Output:\n\(output)")
+        XCTAssertTrue(output.contains("\t\"key\""),
+                      "Expected tab indent for keys. Output:\n\(output)")
+        XCTAssertNotNil(try? JSONSerialization.jsonObject(with: output.data(using: .utf8)!),
+                        "Tab-indented output must be valid JSON")
+    }
+
+    func testPrettyPrint_fourSpaceIndent_multipleConsecutiveSpaces() throws {
+        // CR-03: multiple pairs of spaces in different values must all survive.
+        let input = #"{"a":"some  double  spaces","b":"normal"}"#
+        let result = JSONTransformer.prettyPrint(input, indent: 4)
+        guard case .success(let output) = result else {
+            XCTFail("Expected success, got \(result)")
+            return
+        }
+        XCTAssertTrue(output.contains("\"some  double  spaces\""),
+                      "All consecutive spaces in values must be preserved. Output:\n\(output)")
+        XCTAssertTrue(output.contains("\"normal\""),
+                      "Normal values must be preserved. Output:\n\(output)")
+    }
+
     // MARK: - JSON-03 display message format
 
     func testErrorDisplayMessage_includesLineAndColumn() {
