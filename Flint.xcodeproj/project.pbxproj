@@ -23,6 +23,9 @@
 		001100000002004 /* RegexDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000002004 /* RegexDefinition.swift */; };
 		001100000002005 /* RegexTransformerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000002005 /* RegexTransformerTests.swift */; };
 		001100000003001 /* ColorTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000003001 /* ColorTransformer.swift */; };
+		001100000003002 /* ColorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000003002 /* ColorViewModel.swift */; };
+		001100000003003 /* ColorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000003003 /* ColorView.swift */; };
+		001100000003004 /* ColorDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000003004 /* ColorDefinition.swift */; };
 		001100000003005 /* ColorTransformerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000003005 /* ColorTransformerTests.swift */; };
 		001100000000001 /* FlintApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000001 /* FlintApp.swift */; };
 		001100000000002 /* WindowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000002 /* WindowCoordinator.swift */; };
@@ -182,6 +185,9 @@
 		001200000002004 /* RegexDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegexDefinition.swift; sourceTree = "<group>"; };
 		001200000002005 /* RegexTransformerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegexTransformerTests.swift; sourceTree = "<group>"; };
 		001200000003001 /* ColorTransformer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorTransformer.swift; sourceTree = "<group>"; };
+		001200000003002 /* ColorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorViewModel.swift; sourceTree = "<group>"; };
+		001200000003003 /* ColorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorView.swift; sourceTree = "<group>"; };
+		001200000003004 /* ColorDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorDefinition.swift; sourceTree = "<group>"; };
 		001200000003005 /* ColorTransformerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorTransformerTests.swift; sourceTree = "<group>"; };
 		0012000000000C1 /* diff.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = diff.swift; sourceTree = "<group>"; };
 		0012000000000C2 /* cleanup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cleanup.swift; sourceTree = "<group>"; };
@@ -329,6 +335,9 @@
 			isa = PBXGroup;
 			children = (
 				001200000003001 /* ColorTransformer.swift */,
+				001200000003002 /* ColorViewModel.swift */,
+				001200000003003 /* ColorView.swift */,
+				001200000003004 /* ColorDefinition.swift */,
 			);
 			path = Color;
 			sourceTree = "<group>";
@@ -679,6 +688,9 @@
 				001100000002003 /* RegexView.swift in Sources */,
 				001100000002004 /* RegexDefinition.swift in Sources */,
 				001100000003001 /* ColorTransformer.swift in Sources */,
+				001100000003002 /* ColorViewModel.swift in Sources */,
+				001100000003003 /* ColorView.swift in Sources */,
+				001100000003004 /* ColorDefinition.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
