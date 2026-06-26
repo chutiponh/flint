@@ -48,6 +48,15 @@ The app uses a multiples-of-4 scale. Values below are the actual tokens establis
 | md-h | 12pt | Horizontal control bar padding (verified: `.padding(.horizontal, 12)` in JSONFormatterView) |
 | md | 16pt | Default SwiftUI `.padding()` equivalent; section separation |
 | separator | 0pt | `Divider()` between major regions (no padding around dividers) |
+
+All layout/padding tokens are multiples of 4.
+
+### Corner Radii
+
+Aesthetic radii — NOT layout spacing, exempt from the 4pt-multiple rule. Carried forward unchanged from verified Phase-1 source (WarningBannerView, InlineErrorView, JSONFormatterView).
+
+| Token | Value | Usage |
+|-------|-------|-------|
 | corner-sm | 6pt | Small surface corner radius (WarningBannerView, InlineErrorView background, bit-buttons) |
 | corner-md | 8pt | Control corner radius (Picker, Toggle, segment controls, swatch card) |
 
