@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Completed 03-03-PLAN.md
-last_updated: "2026-06-26T16:57:01.588Z"
+last_updated: "2026-06-26T17:04:20.121Z"
 last_activity: 2026-06-26
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 24
-  completed_plans: 22
+  completed_plans: 23
   percent: 67
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 ## Current Position
 
 Phase: 03 (polish-distribution) — EXECUTING
-Plan: 5 of 6
+Plan: 6 of 6
 Status: Ready to execute
 Last activity: 2026-06-26
 
-Progress: [█████████░] 92%
+Progress: [██████████] 96%
 
 ## Performance Metrics
 
@@ -72,6 +72,7 @@ Progress: [█████████░] 92%
 | Phase 03-polish-distribution P02a | 5min | 2 tasks | 7 files |
 | Phase 03-polish-distribution P02b | 3 min | 1 tasks | 9 files |
 | Phase 03 P03 | 4 min | 4 tasks | 5 files |
+| Phase 03 P04 | 18min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -105,6 +106,8 @@ Recent decisions affecting current work:
 - [Phase ?]: Covers INFRA-06 hex color slot; narrow #RGB/#RRGGBB/#RRGGBBAA cannot shadow Phase-1 tools
 - [Phase 03-polish-distribution]: [Phase 03 Plan 01]: macOS Services 'Open in Flint' uses a Notification bridge — FlintServiceProvider posts .serviceDidReceiveText off-main; FlintApp receives on @MainActor and runs detect/seed/open. No global singletons added to FROZEN ToolRegistry/ToolSeed.
 - [Phase 03-polish-distribution]: [Phase 03 Plan 01]: Migrated app target to manual Info.plist (GENERATE_INFOPLIST_FILE=NO) because NSServices array-of-dict cannot be a scalar INFOPLIST_KEY_*; test target untouched; foundation for 03-04 Sparkle keys.
+- [Phase 03]: ColorViewModel Color(red:) literals are domain logic (user RGBA to SwiftUI.Color for the system ColorPicker), not INFRA-14 chrome violations; left unchanged
+- [Phase 03]: First-run onboarding gated by a cheap hasSeenOnboarding UserDefaults bool in the popover .onAppear (no cold-start regression); window surfaced via the WindowCoordinator activation dance
 
 ### Pending Todos
 
@@ -128,6 +131,6 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-06-26T16:57:01.579Z
+Last session: 2026-06-26T17:04:06.189Z
 Stopped at: Completed 03-03-PLAN.md
 Resume file: None

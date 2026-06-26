@@ -125,7 +125,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 1 + 3 — shares FlintApp/WindowCoordinator/Info.plist)*
 
-- [ ] 03-04-PLAN.md — First-run onboarding (DIST-03) + full-app VoiceOver audit (INFRA-15): hasSeenOnboarding pref, OnboardingWindowView, openOnboarding activation dance, and a BLOCKING VoiceOver audit across all 12 tools + launcher + 3 Phase 3 surfaces
+- [x] 03-04-PLAN.md — First-run onboarding (DIST-03) + full-app VoiceOver audit (INFRA-15): hasSeenOnboarding pref, OnboardingWindowView, openOnboarding activation dance, and a BLOCKING VoiceOver audit across all 12 tools + launcher + 3 Phase 3 surfaces
 
 **Wave 5** *(blocked on Wave 1 + 3 + 4 — distribution capstone, non-autonomous)*
 
@@ -142,4 +142,4 @@ Phases execute in numeric order: 1 → 2 → 3
 |-------|----------------|--------|-----------|
 | 1. Infrastructure + Core Tools | 10/10 | Complete   | 2026-06-26 |
 | 2. Extended Tools | 8/8 | Complete   | 2026-06-26 |
-| 3. Polish & Distribution | 4/6 | In Progress|  |
+| 3. Polish & Distribution | 5/6 | In Progress|  |
