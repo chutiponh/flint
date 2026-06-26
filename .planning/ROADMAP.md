@@ -108,7 +108,28 @@ Plans:
   3. App ships as a signed, notarized DMG that mounts and installs without a Gatekeeper warning; a first-run onboarding flow greets new users
   4. App auto-updates via Sparkle with EdDSA-signed update bundles; the v0.0.1 to v0.0.2 pipeline is validated locally before the v1.0 release; the EdDSA public key is embedded in Info.plist from first release
 
-**Plans**: TBD
+**Plans**: 5 plans (5 sequential waves — heavy shared-file overlap on FlintApp/WindowCoordinator/Info.plist)
+Plans:
+**Wave 1**
+
+- [ ] 03-01-PLAN.md — Services menu routing (DIST-01): manual Info.plist + NSServices, AppDelegate/FlintServiceProvider, detect()→ToolSeed→activation-dance routing, no-match search staging
+
+**Wave 2** *(blocked on Wave 1 — shares WindowCoordinator/MenuBarPopoverView)*
+
+- [ ] 03-02-PLAN.md — Drag-and-drop (DIST-02): DropOverlayView + shared FileDropHandler, any-file drop on Base64/Hash via chunked pipeline, text-tool drops + binary rejection, launcher detect() routing
+
+**Wave 3** *(blocked on Wave 1 — extends Info.plist + FlintApp)*
+
+- [ ] 03-03-PLAN.md — Sparkle code wiring (DIST-04): Sparkle 2.9.3 SPM, SUPublicEDKey+SUFeedURL in Info.plist [BLOCKING: key from first build], lazy SparkleUpdaterService off cold-start path
+
+**Wave 4** *(blocked on Wave 1 + 3 — shares FlintApp/WindowCoordinator/Info.plist)*
+
+- [ ] 03-04-PLAN.md — First-run onboarding (DIST-03): hasSeenOnboarding pref, OnboardingWindowView (menubar callout + hotkey + Launch-at-Login CTA), openOnboarding activation dance
+
+**Wave 5** *(blocked on Wave 1 + 3 + 4 — distribution capstone, non-autonomous)*
+
+- [ ] 03-05-PLAN.md — Signed/notarized DMG + update dry-run (DIST-03/04): release.sh (Archive→Developer ID→notarytool→staple→create-dmg), dry-run-update.sh (v0.0.1→v0.0.2 appcast), DISTRIBUTION.md
+
 **UI hint**: yes
 
 ## Progress
@@ -120,4 +141,4 @@ Phases execute in numeric order: 1 → 2 → 3
 |-------|----------------|--------|-----------|
 | 1. Infrastructure + Core Tools | 10/10 | Complete   | 2026-06-26 |
 | 2. Extended Tools | 8/8 | Complete   | 2026-06-26 |
-| 3. Polish & Distribution | 0/TBD | Not started | - |
+| 3. Polish & Distribution | 0/5 | Not started | - |
