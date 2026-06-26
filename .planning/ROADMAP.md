@@ -79,7 +79,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 02-04-PLAN.md — Markdown Previewer (swift-markdown→HTML, WebPreviewView, toolbar/footer, HTML/.html/.pdf export)
+- [x] 02-04-PLAN.md — Markdown Previewer (swift-markdown→HTML, WebPreviewView, toolbar/footer, HTML/.html/.pdf export)
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
@@ -119,5 +119,5 @@ Phases execute in numeric order: 1 → 2 → 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Infrastructure + Core Tools | 10/10 | Complete   | 2026-06-26 |
-| 2. Extended Tools | 3/7 | In Progress|  |
+| 2. Extended Tools | 4/7 | In Progress|  |
 | 3. Polish & Distribution | 0/TBD | Not started | - |

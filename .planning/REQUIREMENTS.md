@@ -100,9 +100,9 @@
 ### Extended Tools — Markdown (MD)
 
 - [x] **MD-01**: Split editor/preview view renders GFM live (tables, strikethrough, task lists, fenced code) with debounced updates
-- [ ] **MD-02**: Editor highlights Markdown syntax; preview highlights code blocks
+- [x] **MD-02**: Editor highlights Markdown syntax; preview highlights code blocks
 - [x] **MD-03**: User can export as copied HTML, saved `.html`, or saved `.pdf` (WKWebView)
-- [ ] **MD-04**: Tool shows word count and reading-time estimate; toolbar inserts bold/italic/link/image/code/table
+- [x] **MD-04**: Tool shows word count and reading-time estimate; toolbar inserts bold/italic/link/image/code/table
 
 ### Extended Tools — Number Base (NUM)
 
@@ -224,9 +224,9 @@
 | CLR-03 | Phase 2 | Complete |
 | CLR-04 | Phase 2 | Complete |
 | MD-01 | Phase 2 | Complete |
-| MD-02 | Phase 2 | Pending |
+| MD-02 | Phase 2 | Complete |
 | MD-03 | Phase 2 | Complete |
-| MD-04 | Phase 2 | Pending |
+| MD-04 | Phase 2 | Complete |
 | NUM-01 | Phase 2 | Pending |
 | NUM-02 | Phase 2 | Pending |
 | NUM-03 | Phase 2 | Pending |
