@@ -28,12 +28,12 @@ created: 2026-06-26
 
 ## Spacing Scale
 
-Declared values — derived from existing codebase patterns (source: UI/Components/*.swift):
+Declared values — derived from existing codebase patterns (source: UI/Components/*.swift). All tokens are multiples of 4.
 
 | Token | Value | Usage |
 |-------|-------|-------|
 | xs | 4pt | List row vertical insets (HistoryRowView), icon-to-label gaps |
-| sm | 6–8pt | Banner inner padding vertical (WarningBannerView 6pt, DetectionBannerView 8pt), component gaps |
+| sm | 8pt | Banner inner padding vertical (DetectionBannerView), component gaps |
 | md | 12pt | Horizontal padding for banners, search bar horizontal inset, list row horizontal insets |
 | lg | 16pt | Section spacing in onboarding window, intra-group element spacing |
 | xl | 24pt | Onboarding window content padding, major block separation |
@@ -46,32 +46,29 @@ Exceptions:
 - Onboarding window: 480×360pt recommended — tall enough to show menubar icon callout + hotkey instruction + CTA without scroll
 - Drag-over overlay: covers entire tool surface with 0pt inset (full-surface drop target per D-05)
 - Corner radius: 6pt for banners/cards (WarningBannerView), 8pt for interactive hoverable surfaces (PinnedToolBarView)
+- WarningBannerView vertical padding: 6pt (shipped Phase 1 component — measured from existing rendering, off-scale; locked to preserve shipped appearance, change deferred to a later polish pass)
 
 ---
 
 ## Typography
 
-All sizes are `pt` in SwiftUI `.system(size:)`. Source: measured from existing UI/Components/*.swift.
+All sizes are `pt` in SwiftUI `.system(size:)`. Source: measured from existing UI/Components/*.swift. Declared type scale: 4 sizes maximum.
 
 | Role | Size | Weight | Line Height / Notes |
 |------|------|--------|-------------|
-| Body | 13pt | regular (400) | Default for banner messages, list labels, tool labels — `.font(.system(size: 13))` |
-| Caption / Label | 11–12pt | regular (400) or semibold (600) | HistoryRowView tool-name badge uses 11pt semibold; WarningBannerView message uses 12pt regular |
-| Heading / Subhead | 15pt | regular (400) | Search field text (`.font(.system(size: 15))`); onboarding section heads |
-| Code / Monospaced | 13pt | regular (400) | Hash output, code display — `.font(.system(size: 13, design: .monospaced))` |
+| Caption | 11pt | semibold (600) | HistoryRowView tool-name badge — `.font(.system(size: 11, weight: .semibold))` |
+| Body | 13pt | regular (400) | Default for banner messages, list labels, tool labels, instruction paragraphs, services labels — `.font(.system(size: 13))` |
+| Subhead | 15pt | regular (400) or semibold (600) | Search field text (`.font(.system(size: 15))`); onboarding section heads; drag-over overlay label (15pt semibold) |
+| Display | 20pt | semibold (600) | Onboarding headline "Welcome to Flint" — `.font(.system(size: 20, weight: .semibold))` |
 
 SwiftUI line height: defer to system defaults (macOS resolves automatically). No manual line-height override needed.
 
-Phase 3 additions:
+Code/monospaced variant: Body (13pt regular) with `.font(.system(size: 13, design: .monospaced))` for hash output and code display. This is a design variant of the Body tier, not a separate scale entry.
 
-| Role | Size | Weight | Notes |
-|------|------|--------|-------|
-| Onboarding headline | 20pt | semibold (600) | "Welcome to Flint" welcome title |
-| Onboarding body | 13pt | regular (400) | Instruction paragraphs under each step |
-| Services label | 13pt | regular (400) | Matches body — no special treatment |
-
-Total distinct sizes in use across the app: 8pt, 10pt, 11pt, 12pt, 13pt, 15pt, 22pt (pinned icon SF Symbol).
-Phase 3 adds 20pt (onboarding headline only). No other new sizes introduced.
+Exceptions (off-scale sizes inherited from shipped components — do not count toward the 4-size scale):
+- 10pt: used in minor badge sub-labels in pre-existing Phase 1/2 components — locked to existing rendering, off-scale change deferred
+- 12pt: used in WarningBannerView message text in pre-existing Phase 1 component — locked to existing rendering; collapses into Body (13pt) on next polish pass
+- 22pt: SF Symbol glyph size for the pinned-icon in PinnedToolBarView — this is a system glyph render size, not a text style, and does not count toward the type scale
 
 ---
 
