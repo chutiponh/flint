@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Plan 01-07 complete — Task 4 performance checkpoint accepted on source-level checks; on-hardware measurements deferred to pre-release Instruments pass
-last_updated: "2026-06-25T16:09:20.645Z"
-last_activity: 2026-06-25 -- Phase 01 marked complete
+status: executing
+stopped_at: Plan 01-08 complete — Tasks 1+2 committed; Task 3 is checkpoint:human-verify for UAT Test 15 drag gesture (cannot be automated)
+last_updated: "2026-06-26T03:10:35.222Z"
+last_activity: 2026-06-26
 progress:
   total_phases: 3
-  completed_phases: 1
-  total_plans: 7
-  completed_plans: 7
-  percent: 33
+  completed_phases: 0
+  total_plans: 10
+  completed_plans: 8
+  percent: 0
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 
 ## Current Position
 
-Phase: 01 — COMPLETE
-Plan: 7 of 7 (all complete)
-Status: Phase 01 complete
-Last activity: 2026-06-25 -- Phase 01 marked complete
+Phase: 01 (infrastructure-core-tools) — EXECUTING
+Plan: 2 of 10
+Status: Ready to execute
+Last activity: 2026-06-26
 
-Progress: [██████████] 100%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
@@ -59,6 +59,7 @@ Progress: [██████████] 100%
 | Phase 01-infrastructure-core-tools P05 | 25min | 2 tasks | 6 files |
 | Phase 01-infrastructure-core-tools P06 | 35 minutes | 3 tasks | 10 files |
 | Phase 01-infrastructure-core-tools P07 | 90min | 4 tasks (Task 4 accepted on source-level checks) | 6 files |
+| Phase 01-infrastructure-core-tools P08 | 16 minutes | 2 tasks auto + 1 checkpoint:human-verify | 3 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,8 @@ Recent decisions affecting current work:
 - [Phase ?]: WindowCoordinator activation dance for macOS 14 (openSettings broken with .accessory)
 - [Phase ?]: Task 3 a11y: automated checks pass; live VoiceOver/Light-Dark deferred to pre-release
 - [Phase 01 Plan 07]: Task 4 perf checkpoint accepted on source-level architecture checks only; cold start / hotkey latency / RAM / idle CPU measurements are unmeasured and deferred to a pre-release Instruments pass — architecture structurally supports the budget but numbers are unconfirmed
+- [Phase 01 Plan 08]: Use plain VStack + .onTapGesture instead of Button so .onDrag can claim the press gesture (macOS Button pre-empts drag); add .accessibilityAddTraits(.isButton) to preserve role
+- [Phase 01 Plan 08]: Remove destIndex+1 in PinnedToolDropDelegate.performDrop — Array.move toOffset is already insert-before-index convention; the +1 double-compensated and placed forward drags one slot past the drop target
 
 ### Pending Todos
 
@@ -102,6 +105,6 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-06-25T16:00:00Z
-Stopped at: Plan 01-07 complete — Task 4 performance checkpoint accepted on source-level checks; on-hardware measurements deferred to pre-release Instruments pass
+Last session: 2026-06-26T03:10:35.213Z
+Stopped at: Plan 01-08 complete — Tasks 1+2 committed (73ffee9, 4ed40d5); Task 3 checkpoint:human-verify requires manual UAT Test 15 drag gesture verification
 Resume file: None
