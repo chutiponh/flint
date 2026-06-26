@@ -1,9 +1,9 @@
-// LatheTests/URLTransformerTests.swift
+// FlintTests/URLTransformerTests.swift
 // Unit tests for URLTransformer — covers URL-01..04 + INFRA-17 no-crash guarantee.
 // TDD: Tests written against the behavior spec before implementation.
 
 import XCTest
-@testable import Lathe
+@testable import Flint
 
 final class URLTransformerTests: XCTestCase {
 

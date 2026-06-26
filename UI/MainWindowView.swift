@@ -24,7 +24,7 @@ struct MainWindowView: View {
                     .accessibilityLabel(tool.name)
                     .help(tool.name)
             }
-            .navigationTitle("Lathe")
+            .navigationTitle("Flint")
             .listStyle(.sidebar)
             .accessibilityLabel("Tool list")
         } detail: {

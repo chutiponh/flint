@@ -1,11 +1,11 @@
-// LatheTests/HistorySearchTests.swift
+// FlintTests/HistorySearchTests.swift
 // Tests for SearchResultsMerger — the pure, UI-free merge/rank function (INFRA-10).
 // The merge function is UI-free: SearchResultsMerger imports only Foundation.
 // Tests cover: tool match, history match, no-match copy, ranked order, history-query detection.
 
 import XCTest
 import SwiftUI
-@testable import Lathe
+@testable import Flint
 
 final class HistorySearchTests: XCTestCase {
 
@@ -211,13 +211,13 @@ final class HistorySearchTests: XCTestCase {
 
     func test_searchResultsMerger_hasNoSwiftUIImport() throws {
         // Source assertion: SearchResultsMerger must have 0 SwiftUI imports (testable without UI).
-        // The test file is at LatheTests/HistorySearchTests.swift.
+        // The test file is at FlintTests/HistorySearchTests.swift.
         // SearchResultsMerger.swift is at Core/Services/SearchResultsMerger.swift (project root relative).
         // We resolve the project root as two directories above this test file.
         let testFileURL = URL(fileURLWithPath: #file)
         // #file may be an absolute path or relative — normalize it
         let projectRoot = testFileURL
-            .deletingLastPathComponent()  // LatheTests/
+            .deletingLastPathComponent()  // FlintTests/
             .deletingLastPathComponent()  // project root
 
         let mergerURL = projectRoot.appendingPathComponent("Core/Services/SearchResultsMerger.swift")

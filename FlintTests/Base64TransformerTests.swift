@@ -1,9 +1,9 @@
-// LatheTests/Base64TransformerTests.swift
+// FlintTests/Base64TransformerTests.swift
 // Unit tests for Base64Transformer — covers B64-01..05 + INFRA-17 no-crash guarantee.
 // TDD: Tests written against the behavior spec before implementation.
 
 import XCTest
-@testable import Lathe
+@testable import Flint
 
 final class Base64TransformerTests: XCTestCase {
 

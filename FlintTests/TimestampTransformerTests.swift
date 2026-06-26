@@ -1,9 +1,9 @@
-// LatheTests/TimestampTransformerTests.swift
+// FlintTests/TimestampTransformerTests.swift
 // Tests for TimestampTransformer — covers TS-01..05 + pitfall #8 + INFRA-17
 
 import Testing
 import Foundation
-@testable import Lathe
+@testable import Flint
 
 @Suite("TimestampTransformer")
 struct TimestampTransformerTests {

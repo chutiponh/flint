@@ -62,12 +62,12 @@ private struct GeneralPreferencesTab: View {
             Section("Startup") {
                 // INFRA-13: Launch at login via SMAppService.mainApp.register()/unregister()
                 Toggle("Launch at login", isOn: $prefs.launchAtLogin)
-                    .accessibilityLabel("Launch Lathe at login")
-                    .help("Automatically start Lathe when you log in to your Mac.")
+                    .accessibilityLabel("Launch Flint at login")
+                    .help("Automatically start Flint when you log in to your Mac.")
 
                 Toggle("Show in Dock", isOn: $prefs.showInDock)
-                    .accessibilityLabel("Show Lathe in the Dock")
-                    .help("Keep the Lathe icon in the Dock at all times (not just when windows are open).")
+                    .accessibilityLabel("Show Flint in the Dock")
+                    .help("Keep the Flint icon in the Dock at all times (not just when windows are open).")
             }
 
             // MARK: Opening Behaviour
@@ -86,17 +86,17 @@ private struct GeneralPreferencesTab: View {
             Section("Clipboard") {
                 Toggle("Auto-detect clipboard content", isOn: $prefs.clipboardAutoDetect)
                     .accessibilityLabel("Automatically detect clipboard content and suggest the best tool")
-                    .help("Lathe will check the clipboard when the popover opens and suggest the right tool for the content.")
+                    .help("Flint will check the clipboard when the popover opens and suggest the right tool for the content.")
             }
 
             // MARK: Global Hotkey (INFRA-04, INFRA-13)
             Section("Global Hotkey") {
                 HStack {
-                    Text("Open / focus Lathe")
-                        .accessibilityLabel("Hotkey to open or focus Lathe")
+                    Text("Open / focus Flint")
+                        .accessibilityLabel("Hotkey to open or focus Flint")
                     Spacer()
-                    KeyboardShortcuts.Recorder("", name: .openLathe)
-                        .accessibilityLabel("Record new hotkey for opening Lathe")
+                    KeyboardShortcuts.Recorder("", name: .openFlint)
+                        .accessibilityLabel("Record new hotkey for opening Flint")
                         .help("Click to record a new global hotkey. Default: ⌘⇧Space.")
                 }
             }
@@ -125,7 +125,7 @@ private struct AppearancePreferencesTab: View {
                 }
                 .pickerStyle(.segmented)
                 .accessibilityLabel("Appearance theme — System, Light, or Dark")
-                .help("Override the system appearance for Lathe's windows.")
+                .help("Override the system appearance for Flint's windows.")
             }
 
             // MARK: Code Font

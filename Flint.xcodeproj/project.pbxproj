@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		001100000000001 /* LatheApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000001 /* LatheApp.swift */; };
+		001100000000001 /* FlintApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000001 /* FlintApp.swift */; };
 		001100000000002 /* WindowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000002 /* WindowCoordinator.swift */; };
 		001100000000003 /* ToolCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000003 /* ToolCategory.swift */; };
 		001100000000004 /* ToolDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000004 /* ToolDefinition.swift */; };
@@ -77,6 +77,7 @@
 		0011000000000A2 /* HistoryPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000000A2 /* HistoryPanelView.swift */; };
 		0011000000000A3 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000000A3 /* SearchView.swift */; };
 		0011000000000A4 /* PinnedToolBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000000A4 /* PinnedToolBarView.swift */; };
+		0011000000000B2 /* ToolShortcutActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000000B2 /* ToolShortcutActions.swift */; };
 		0011000000000A5 /* HistorySearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000000A5 /* HistorySearchTests.swift */; };
 		0011000000000A6 /* SearchResultsMerger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000000A6 /* SearchResultsMerger.swift */; };
 		0011000000000B0 /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000000B0 /* PreferencesView.swift */; };
@@ -84,7 +85,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		001200000000001 /* LatheApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LatheApp.swift; sourceTree = "<group>"; };
+		001200000000001 /* FlintApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlintApp.swift; sourceTree = "<group>"; };
 		001200000000002 /* WindowCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowCoordinator.swift; sourceTree = "<group>"; };
 		001200000000003 /* ToolCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolCategory.swift; sourceTree = "<group>"; };
 		001200000000004 /* ToolDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolDefinition.swift; sourceTree = "<group>"; };
@@ -114,8 +115,8 @@
 		00120000000001C /* HashDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HashDefinition.swift; sourceTree = "<group>"; };
 		00120000000001D /* UUIDDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UUIDDefinition.swift; sourceTree = "<group>"; };
 		001200000000020 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		001200000000021 /* Lathe-debug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Lathe-debug.entitlements"; sourceTree = "<group>"; };
-		001200000000022 /* Lathe-release.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Lathe-release.entitlements"; sourceTree = "<group>"; };
+		001200000000021 /* Flint-debug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Flint-debug.entitlements"; sourceTree = "<group>"; };
+		001200000000022 /* Flint-release.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Flint-release.entitlements"; sourceTree = "<group>"; };
 		001200000000030 /* JSONTransformerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONTransformerTests.swift; sourceTree = "<group>"; };
 		001200000000031 /* Base64TransformerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Base64TransformerTests.swift; sourceTree = "<group>"; };
 		001200000000032 /* URLTransformerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLTransformerTests.swift; sourceTree = "<group>"; };
@@ -146,12 +147,13 @@
 		0012000000009B /* UUIDViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UUIDViewModel.swift; sourceTree = "<group>"; };
 		0012000000009C /* UUIDView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UUIDView.swift; sourceTree = "<group>"; };
 		0012000000009D /* UUIDTransformerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UUIDTransformerTests.swift; sourceTree = "<group>"; };
-		001200000000090 /* Lathe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lathe.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		001200000000091 /* LatheTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LatheTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		001200000000090 /* Flint.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flint.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		001200000000091 /* FlintTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FlintTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0012000000000A1 /* HistoryRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryRowView.swift; sourceTree = "<group>"; };
 		0012000000000A2 /* HistoryPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryPanelView.swift; sourceTree = "<group>"; };
 		0012000000000A3 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
 		0012000000000A4 /* PinnedToolBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedToolBarView.swift; sourceTree = "<group>"; };
+		0012000000000B2 /* ToolShortcutActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolShortcutActions.swift; sourceTree = "<group>"; };
 		0012000000000A5 /* HistorySearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistorySearchTests.swift; sourceTree = "<group>"; };
 		0012000000000A6 /* SearchResultsMerger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultsMerger.swift; sourceTree = "<group>"; };
 		0012000000000B0 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
@@ -186,8 +188,8 @@
 		001500000000000 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				001200000000090 /* Lathe.app */,
-				001200000000091 /* LatheTests.xctest */,
+				001200000000090 /* Flint.app */,
+				001200000000091 /* FlintTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -203,7 +205,7 @@
 		001500000000002 /* App */ = {
 			isa = PBXGroup;
 			children = (
-				001200000000001 /* LatheApp.swift */,
+				001200000000001 /* FlintApp.swift */,
 				001200000000002 /* WindowCoordinator.swift */,
 			);
 			path = App;
@@ -369,6 +371,7 @@
 				001200000000085 /* ProgressHashView.swift */,
 				0012000000000A1 /* HistoryRowView.swift */,
 				0012000000000A4 /* PinnedToolBarView.swift */,
+				0012000000000B2 /* ToolShortcutActions.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -377,13 +380,13 @@
 			isa = PBXGroup;
 			children = (
 				001200000000020 /* Assets.xcassets */,
-				001200000000021 /* Lathe-debug.entitlements */,
-				001200000000022 /* Lathe-release.entitlements */,
+				001200000000021 /* Flint-debug.entitlements */,
+				001200000000022 /* Flint-release.entitlements */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
 		};
-		001500000000012 /* LatheTests */ = {
+		001500000000012 /* FlintTests */ = {
 			isa = PBXGroup;
 			children = (
 				001200000000030 /* JSONTransformerTests.swift */,
@@ -396,7 +399,7 @@
 				0012000000000A5 /* HistorySearchTests.swift */,
 				0012000000000B1 /* PinnedToolReorderTests.swift */,
 			);
-			path = LatheTests;
+			path = FlintTests;
 			sourceTree = "<group>";
 		};
 		001500000000099 = {
@@ -407,7 +410,7 @@
 				001500000000007 /* Tools */,
 				00150000000000F /* UI */,
 				001500000000011 /* Resources */,
-				001500000000012 /* LatheTests */,
+				001500000000012 /* FlintTests */,
 				001500000000001 /* Frameworks */,
 				001500000000000 /* Products */,
 			);
@@ -416,9 +419,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		001600000000001 /* Lathe */ = {
+		001600000000001 /* Flint */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 001700000000001 /* Build configuration list for PBXNativeTarget "Lathe" */;
+			buildConfigurationList = 001700000000001 /* Build configuration list for PBXNativeTarget "Flint" */;
 			buildPhases = (
 				001400000000001 /* Frameworks */,
 				001800000000001 /* Sources */,
@@ -428,7 +431,7 @@
 			);
 			dependencies = (
 			);
-			name = Lathe;
+			name = Flint;
 			packageProductDependencies = (
 				001300000000001 /* GRDB */,
 				001300000000002 /* KeyboardShortcuts */,
@@ -436,13 +439,13 @@
 				001300000000004 /* HighlightSwift */,
 				001300000000005 /* UUIDv7 */,
 			);
-			productName = Lathe;
-			productReference = 001200000000090 /* Lathe.app */;
+			productName = Flint;
+			productReference = 001200000000090 /* Flint.app */;
 			productType = "com.apple.product-type.application";
 		};
-		001600000000002 /* LatheTests */ = {
+		001600000000002 /* FlintTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 001700000000002 /* Build configuration list for PBXNativeTarget "LatheTests" */;
+			buildConfigurationList = 001700000000002 /* Build configuration list for PBXNativeTarget "FlintTests" */;
 			buildPhases = (
 				001400000000002 /* Frameworks (Tests) */,
 				001800000000002 /* Sources (Tests) */,
@@ -452,12 +455,12 @@
 			dependencies = (
 				001900000000001 /* PBXTargetDependency */,
 			);
-			name = LatheTests;
+			name = FlintTests;
 			packageProductDependencies = (
 				001300000000011 /* GRDB */,
 			);
-			productName = LatheTests;
-			productReference = 001200000000091 /* LatheTests.xctest */;
+			productName = FlintTests;
+			productReference = 001200000000091 /* FlintTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -479,7 +482,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 001700000000000 /* Build configuration list for PBXProject "Lathe" */;
+			buildConfigurationList = 001700000000000 /* Build configuration list for PBXProject "Flint" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -499,8 +502,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				001600000000001 /* Lathe */,
-				001600000000002 /* LatheTests */,
+				001600000000001 /* Flint */,
+				001600000000002 /* FlintTests */,
 			);
 		};
 /* End PBXProject section */
@@ -521,7 +524,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				001100000000001 /* LatheApp.swift in Sources */,
+				001100000000001 /* FlintApp.swift in Sources */,
 				001100000000002 /* WindowCoordinator.swift in Sources */,
 				001100000000003 /* ToolCategory.swift in Sources */,
 				001100000000004 /* ToolDefinition.swift in Sources */,
@@ -576,6 +579,7 @@
 				0011000000000A2 /* HistoryPanelView.swift in Sources */,
 				0011000000000A3 /* SearchView.swift in Sources */,
 				0011000000000A4 /* PinnedToolBarView.swift in Sources */,
+				0011000000000B2 /* ToolShortcutActions.swift in Sources */,
 				0011000000000A6 /* SearchResultsMerger.swift in Sources */,
 				0011000000000B0 /* PreferencesView.swift in Sources */,
 			);
@@ -602,7 +606,7 @@
 /* Begin PBXTargetDependency section */
 		001900000000001 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 001600000000001 /* Lathe */;
+			target = 001600000000001 /* Flint */;
 			targetProxy = 001900000000002 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -613,7 +617,7 @@
 			containerPortal = 001A00000000001 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 001600000000001;
-			remoteInfo = Lathe;
+			remoteInfo = Flint;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -729,19 +733,19 @@
 			};
 			name = Release;
 		};
-		001700000000020 /* Debug (Lathe) */ = {
+		001700000000020 /* Debug (Flint) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Resources/Lathe-debug.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Resources/Flint-debug.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = Lathe;
+				INFOPLIST_KEY_CFBundleDisplayName = Flint;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_LSBackgroundOnly = 0;
 				INFOPLIST_KEY_LSUIElement = 1;
@@ -752,7 +756,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.lathe.app";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.flint.app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -763,19 +767,19 @@
 			};
 			name = Debug;
 		};
-		001700000000021 /* Release (Lathe) */ = {
+		001700000000021 /* Release (Flint) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Resources/Lathe-release.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Resources/Flint-release.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = Lathe;
+				INFOPLIST_KEY_CFBundleDisplayName = Flint;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_LSBackgroundOnly = 0;
 				INFOPLIST_KEY_LSUIElement = 1;
@@ -786,7 +790,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.lathe.app";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.flint.app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -797,7 +801,7 @@
 			};
 			name = Release;
 		};
-		001700000000030 /* Debug (LatheTests) */ = {
+		001700000000030 /* Debug (FlintTests) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -806,16 +810,16 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.lathe.app.tests";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.flint.app.tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Lathe.app/Contents/MacOS/Lathe";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Flint.app/Contents/MacOS/Flint";
 			};
 			name = Debug;
 		};
-		001700000000031 /* Release (LatheTests) */ = {
+		001700000000031 /* Release (FlintTests) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -824,19 +828,19 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.lathe.app.tests";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.flint.app.tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Lathe.app/Contents/MacOS/Lathe";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Flint.app/Contents/MacOS/Flint";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		001700000000000 /* Build configuration list for PBXProject "Lathe" */ = {
+		001700000000000 /* Build configuration list for PBXProject "Flint" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				001700000000010 /* Debug */,
@@ -845,7 +849,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		001700000000001 /* Build configuration list for PBXNativeTarget "Lathe" */ = {
+		001700000000001 /* Build configuration list for PBXNativeTarget "Flint" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				001700000000020 /* Debug */,
@@ -854,7 +858,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		001700000000002 /* Build configuration list for PBXNativeTarget "LatheTests" */ = {
+		001700000000002 /* Build configuration list for PBXNativeTarget "FlintTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				001700000000030 /* Debug */,

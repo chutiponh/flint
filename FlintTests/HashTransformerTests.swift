@@ -1,10 +1,10 @@
-// LatheTests/HashTransformerTests.swift
+// FlintTests/HashTransformerTests.swift
 // Tests for HashTransformer — reference vectors for all 6 algorithms + chunked file hashing.
 // HASH-01..04, INFRA-17, pitfall #9.
 
 import Testing
 import Foundation
-@testable import Lathe
+@testable import Flint
 
 // Thread-safe counter for testing async progress handlers
 final class ProgressCounter: @unchecked Sendable {

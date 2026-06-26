@@ -10,7 +10,7 @@ import Observation
 extension KeyboardShortcuts.Name {
     // Default: ⌘⇧Space — user-configurable in preferences (INFRA-04)
     // Note: Using 'initial:' (new API) to avoid deprecation
-    static let openLathe = Self("openLathe", initial: .init(.space, modifiers: [.command, .shift]))
+    static let openFlint = Self("openFlint", initial: .init(.space, modifiers: [.command, .shift]))
 }
 
 extension Notification.Name {
@@ -24,7 +24,7 @@ final class HotkeyManager {
     init() {
         // Register hotkey — fires NotificationCenter so any subscriber can respond
         // KeyboardShortcuts.onKeyDown is @MainActor-isolated in v3.0.1
-        KeyboardShortcuts.onKeyDown(for: .openLathe) {
+        KeyboardShortcuts.onKeyDown(for: .openFlint) {
             NotificationCenter.default.post(name: .showPopover, object: nil)
         }
     }

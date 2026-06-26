@@ -1,4 +1,4 @@
-// App/LatheApp.swift
+// App/FlintApp.swift
 // @main app entry point — service ownership, MenuBarExtra + MenuBarExtraAccess wiring.
 // Services are @State (only lifecycle-stable ownership point — Pattern 1).
 // Source: RESEARCH.md Pattern 1 [VERIFIED]
@@ -13,7 +13,7 @@ import SwiftUI
 import MenuBarExtraAccess
 
 @main
-struct LatheApp: App {
+struct FlintApp: App {
     // MARK: - Service Ownership (Pattern 1)
     // All shared services live here — the only lifecycle-stable ownership point.
     // Tool ViewModels are created on-demand per navigation destination.
@@ -27,7 +27,7 @@ struct LatheApp: App {
     var body: some Scene {
         // MARK: - MenuBar Popover
         // MenuBarExtraAccess must be applied before .menuBarExtraStyle (extension on MenuBarExtra)
-        MenuBarExtra("Lathe", systemImage: "wrench.and.screwdriver") {
+        MenuBarExtra("Flint", systemImage: "wrench.and.screwdriver") {
             MenuBarPopoverView()
                 .environment(historyStore)
                 .environment(prefs)

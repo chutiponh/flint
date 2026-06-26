@@ -1,11 +1,11 @@
-// LatheTests/JWTTransformerTests.swift
+// FlintTests/JWTTransformerTests.swift
 // Unit tests for JWTTransformer — covers JWT-01..06 + INFRA-17 no-crash guarantee.
 // TDD: Tests written against the behavior spec before implementation.
 // Regression tests for pitfall #4 (base64url -/_ decode) and pitfall #11 (timezone).
 
 import XCTest
 import CryptoKit
-@testable import Lathe
+@testable import Flint
 
 final class JWTTransformerTests: XCTestCase {
 

@@ -1,9 +1,9 @@
-// LatheTests/JSONTransformerTests.swift
+// FlintTests/JSONTransformerTests.swift
 // Unit tests for JSONTransformer — covers JSON-01..06 + INFRA-17 no-crash guarantee.
 // TDD: Tests written against the behavior spec before implementation.
 
 import XCTest
-@testable import Lathe
+@testable import Flint
 
 final class JSONTransformerTests: XCTestCase {
 

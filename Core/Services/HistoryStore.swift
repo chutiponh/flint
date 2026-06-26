@@ -16,7 +16,7 @@ final class HistoryStore {
 
     /// WR-04: configurable cap sourced from PreferencesStore.historyLimit.
     /// HistoryStore does not retain a reference to PreferencesStore; callers update
-    /// this value whenever the preference changes (or LatheApp can wire it via onChange).
+    /// this value whenever the preference changes (or FlintApp can wire it via onChange).
     var historyLimit: Int = 100 {
         didSet {
             let clamped = max(10, min(100, historyLimit))
@@ -49,10 +49,10 @@ final class HistoryStore {
         let appSupport = try FileManager.default
             .url(for: .applicationSupportDirectory, in: .userDomainMask,
                  appropriateFor: nil, create: true)
-        let latheDir = appSupport.appendingPathComponent("Lathe", isDirectory: true)
-        try FileManager.default.createDirectory(at: latheDir,
+        let flintDir = appSupport.appendingPathComponent("Flint", isDirectory: true)
+        try FileManager.default.createDirectory(at: flintDir,
                                                 withIntermediateDirectories: true)
-        let dbURL = latheDir.appendingPathComponent("history.db")
+        let dbURL = flintDir.appendingPathComponent("history.db")
         let queue = try DatabaseQueue(path: dbURL.path)
 
         var migrator = DatabaseMigrator()

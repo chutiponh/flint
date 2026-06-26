@@ -15,6 +15,7 @@
 // Source: RESEARCH.md Pattern 1 + UI-SPEC.md § "Popover Layout"
 
 import SwiftUI
+import AppKit
 
 // MARK: - Notification Names (INFRA-16)
 
@@ -53,6 +54,13 @@ struct MenuBarPopoverView: View {
     @State private var navigationState: PopoverNavigationState = .root
     @State private var dismissedDetection: Bool = false
     @FocusState private var searchFocused: Bool
+    /// Local keyDown monitor for Esc. Installed while the popover is on screen so Esc is caught
+    /// regardless of which AppKit first responder holds focus — the SyntaxEditorView NSTextView,
+    /// the history List's NSTableView, or none. SwiftUI's `.onKeyPress(.escape)` only fires when
+    /// the popover subtree itself holds key focus, so it silently fails whenever a descendant
+    /// responder (text view / table) swallows Esc first (UAT Test 16). A local monitor sees the
+    /// event before responder dispatch and covers every focus state with one mechanism.
+    @State private var escMonitor: Any?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -108,29 +116,18 @@ struct MenuBarPopoverView: View {
                 navigationState = .searchResults(query: newValue)
             }
         }
-        .onKeyPress(.escape) {
-            handleEscape()
-            return .handled
-        }
         .onAppear {
             searchFocused = true
             // Start clipboard detection with the registry (called here so toolRegistry is ready)
             clipboard.start(registry: toolRegistry)
+            installEscMonitor()
+        }
+        .onDisappear {
+            removeEscMonitor()
         }
         // Handle hotkey notification (show popover)
         .onReceive(NotificationCenter.default.publisher(for: .showPopover)) { _ in
             clipboard.isPopoverPresented = true
-        }
-        // Esc forwarded from the focused SyntaxEditorView NSTextView (INFRA-16 / UAT Test 16 fix).
-        // When the editor holds first-responder focus, AppKit delivers Esc to the NSTextView which
-        // consumes it via cancelOperation, so the .onKeyPress(.escape) below never fires. The
-        // SyntaxEditorView.Coordinator intercepts cancelOperation, posts .escapePressed, and returns
-        // true — preventing the text view from consuming Esc. We pick it up here and run the same
-        // two-stage handler. No debounce needed: when the editor is focused only this path fires
-        // (cancelOperation intercepted → .escapePressed); when it is unfocused only .onKeyPress
-        // fires (key reaches SwiftUI unimpeded). The two paths are mutually exclusive.
-        .onReceive(NotificationCenter.default.publisher(for: .escapePressed)) { _ in
-            handleEscape()
         }
         // INFRA-16: Global keyboard shortcuts — wired via hidden overlay buttons in .background()
         // ⌘H — toggle history panel (D-07)
@@ -355,7 +352,7 @@ struct MenuBarPopoverView: View {
                     Image(systemName: "wrench.and.screwdriver")
                         .font(.system(size: 40))
                         .foregroundColor(.secondary)
-                    Text("Welcome to Lathe")
+                    Text("Welcome to Flint")
                         .font(.headline)
                     Text("Paste content or press ⌘⇧Space from any app to get started.")
                         .font(.body)
@@ -393,6 +390,28 @@ struct MenuBarPopoverView: View {
             // Stage 1: return to launcher
             navigationState = .root
             searchText = ""
+        }
+    }
+
+    /// Install a local keyDown monitor that runs the two-stage Esc handler for any Esc press
+    /// while the popover is on screen, no matter which first responder is focused. Returning nil
+    /// consumes the event (so the focused text view / table never sees its own cancelOperation);
+    /// any other key is returned untouched. keyCode 53 is Esc. Idempotent.
+    private func installEscMonitor() {
+        guard escMonitor == nil else { return }
+        escMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            if event.keyCode == 53 {
+                handleEscape()
+                return nil
+            }
+            return event
+        }
+    }
+
+    private func removeEscMonitor() {
+        if let monitor = escMonitor {
+            NSEvent.removeMonitor(monitor)
+            escMonitor = nil
         }
     }
 }

@@ -1,4 +1,4 @@
-// LatheTests/PinnedToolReorderTests.swift
+// FlintTests/PinnedToolReorderTests.swift
 // Regression tests for movePinnedTool reorder index semantics (INFRA-11, plan 01-08).
 //
 // These tests lock the CORRECT index math for prefs.movePinnedTool(from:to:)
@@ -20,7 +20,7 @@
 // defaults domain is not permanently mutated.
 
 import XCTest
-@testable import Lathe
+@testable import Flint
 
 final class PinnedToolReorderTests: XCTestCase {
 

@@ -6,16 +6,6 @@
 import SwiftUI
 import AppKit
 
-// MARK: - Notification Names
-
-extension Notification.Name {
-    /// Broadcast by SyntaxEditorView.Coordinator when the focused NSTextView receives Esc
-    /// (cancelOperation:). MenuBarPopoverView subscribes to route this to handleEscape() so
-    /// stage-1 Esc (back-to-launcher) works even when the editor holds first-responder focus.
-    /// Fix for UAT Test 16 intermittent failure (INFRA-16).
-    static let escapePressed = Notification.Name("lathe.escapePressed")
-}
-
 struct SyntaxEditorView: NSViewRepresentable {
     @Binding var text: String
     var font: NSFont = .monospacedSystemFont(ofSize: 13, weight: .regular)
@@ -77,27 +67,7 @@ struct SyntaxEditorView: NSViewRepresentable {
                 self?.text.wrappedValue = textView.string
             }
         }
-
-        // MARK: - Esc Interception (INFRA-16 / UAT Test 16 fix)
-
-        /// Called by AppKit before the NSTextView performs a command selector.
-        /// When the user presses Esc, the selector is `cancelOperation:` — the same action that
-        /// NSTextView normally uses for field-editor completion cancellation. Standard NSTextView
-        /// consumes cancelOperation without forwarding it up the responder chain, so SwiftUI's
-        /// `.onKeyPress(.escape)` on the parent MenuBarPopoverView never fires.
-        ///
-        /// Returning `true` here tells AppKit "I handled it" — the text view does NOT execute its
-        /// own cancelOperation. We instead broadcast `.escapePressed` so MenuBarPopoverView can
-        /// call handleEscape() and run the two-stage Esc logic (D-03).
-        ///
-        /// All other selectors return `false` so normal editing keys (Return, Tab, etc.) pass
-        /// through to the text view unchanged.
-        func textView(_ textView: NSTextView, doCommandBy selector: Selector) -> Bool {
-            if selector == #selector(NSResponder.cancelOperation(_:)) {
-                NotificationCenter.default.post(name: .escapePressed, object: nil)
-                return true  // consumed — text view must not run its own cancelOperation
-            }
-            return false  // all other commands: let the text view handle normally
-        }
+        // Esc handling lives in MenuBarPopoverView via a local NSEvent keyDown monitor
+        // (catches Esc from any first responder — text view, history List, or none).
     }
 }

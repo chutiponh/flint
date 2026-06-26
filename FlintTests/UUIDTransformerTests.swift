@@ -1,8 +1,8 @@
-// LatheTests/UUIDTransformerTests.swift
+// FlintTests/UUIDTransformerTests.swift
 // Tests for UUIDTransformer covering UUID-01..04 and INFRA-17.
 
 import XCTest
-@testable import Lathe
+@testable import Flint
 
 final class UUIDTransformerTests: XCTestCase {
 
