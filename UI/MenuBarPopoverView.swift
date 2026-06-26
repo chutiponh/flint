@@ -55,6 +55,11 @@ struct MenuBarPopoverView: View {
     @State private var navigationState: PopoverNavigationState = .root
     @State private var dismissedDetection: Bool = false
     @FocusState private var searchFocused: Bool
+    // DIST-02 (D-04 / D-06): launcher file drop. A dropped text file is decoded off-main, run
+    // through detect(), and routed to the best tool (or staged in search on no match). Binary /
+    // oversized files surface POST-DROP via `dropError` → WarningBannerView (never during drag).
+    @State private var isDragTargeted = false
+    @State private var dropError: String?
     /// Local keyDown monitor for Esc. Installed while the popover is on screen so Esc is caught
     /// regardless of which AppKit first responder holds focus — the SyntaxEditorView NSTextView,
     /// the history List's NSTableView, or none. SwiftUI's `.onKeyPress(.escape)` only fires when
@@ -67,6 +72,15 @@ struct MenuBarPopoverView: View {
         VStack(spacing: 0) {
             // Zone 1: Search bar (D-01) — always visible at top
             searchBar
+
+            // DIST-02 (D-06): post-drop rejection surface — a binary/oversized file dropped on the
+            // launcher (text path) is reported here AFTER the drop, never during drag.
+            if let dropError {
+                WarningBannerView(message: dropError, severity: .warning)
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 4)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
 
             // Zone 2: Detection banner (D-04) — slides in when there's a detection
             if let result = clipboard.detectionResult, !dismissedDetection, searchText.isEmpty {
@@ -107,6 +121,32 @@ struct MenuBarPopoverView: View {
         }
         .frame(width: 480, height: 600)
         .background(Color(NSColor.windowBackgroundColor))
+        // DIST-02 (D-04): launcher drop — read file text, run detect(), route to best tool;
+        // no-match stages the text in the search field (mirrors Services D-03). Binary/oversized
+        // is rejected post-drop via WarningBannerView (D-06).
+        .fileDrop(
+            isTargeted: $isDragTargeted,
+            onText: { text in
+                dropError = nil
+                if let result = toolRegistry.detect(from: text) {
+                    toolSeed.set(toolId: result.toolId, value: text)
+                    searchText = ""
+                    navigationState = .tool(toolId: result.toolId)
+                } else {
+                    searchText = text
+                    navigationState = .searchResults(query: text)
+                }
+            },
+            onError: { message in
+                dropError = message
+            }
+        )
+        .overlay {
+            if isDragTargeted {
+                DropOverlayView(label: "Drop to open in best tool")
+                    .transition(.opacity.animation(.easeOut(duration: 0.15)))
+            }
+        }
         .onChange(of: clipboard.detectionResult) { _, _ in
             // D-05: re-show banner on any new detection (reset dismissal)
             dismissedDetection = false

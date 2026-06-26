@@ -4,6 +4,7 @@
 
 import SwiftUI
 import AppKit
+import UniformTypeIdentifiers
 
 struct HashView: View {
     @State private var viewModel: HashViewModel
@@ -11,6 +12,9 @@ struct HashView: View {
     // SECURITY (INFRA-09, pitfall #3): HMAC key lives here as View-local state.
     // It is NEVER passed to viewModel.onSaveHistory or any history-writing path.
     @State private var hmacKey: String = ""
+
+    // DIST-02: binary tool drop — accepts ANY file via the existing off-main startFileHash pipeline.
+    @State private var isDragTargeted = false
 
     init(onSaveHistory: @escaping (HistoryEntry) -> Void) {
         _viewModel = State(initialValue: HashViewModel(onSaveHistory: onSaveHistory))
@@ -29,6 +33,25 @@ struct HashView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .toolShortcuts(viewModel)
+        // DIST-02 (D-06): binary tool accepts ANY dropped file — route directly to the
+        // existing off-main chunked file-hash pipeline (startFileHash). No UTF-8 gate, no size cap.
+        .onDrop(of: [.fileURL], isTargeted: $isDragTargeted) { providers in
+            guard let provider = providers.first else { return false }
+            _ = provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
+                guard let data = item as? Data,
+                      let url = URL(dataRepresentation: data, relativeTo: nil) else { return }
+                Task { @MainActor in
+                    viewModel.startFileHash(url: url)
+                }
+            }
+            return true
+        }
+        .overlay {
+            if isDragTargeted {
+                DropOverlayView(label: "Drop to load file")
+                    .transition(.opacity.animation(.easeOut(duration: 0.15)))
+            }
+        }
     }
 
     // MARK: - Text Input

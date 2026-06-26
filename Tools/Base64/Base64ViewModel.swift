@@ -204,6 +204,32 @@ final class Base64ViewModel: ToolShortcutActions {
         }
     }
 
+    /// Drop entry point (DIST-02): encode a dropped file via the existing off-main chunked pipeline.
+    /// Parallel to HashViewModel.startFileHash(url:); no NSOpenPanel. Accepts ANY file (no UTF-8 gate,
+    /// no universal size cap — D-06); uses the current `urlSafe` mode. Never reads the file on @MainActor.
+    func loadFile(url: URL) {
+        isProcessingFile = true
+        fileErrorMessage = nil
+
+        let urlSafeMode = urlSafe
+        Task.detached(priority: .userInitiated) { [weak self] in
+            do {
+                let encoded = try await Self.encodeFileChunked(url: url, urlSafe: urlSafeMode)
+                await MainActor.run { [weak self] in
+                    self?.isProcessingFile = false
+                    self?.output = encoded
+                    self?.outputDimmed = false
+                    self?.errorMessage = nil
+                }
+            } catch {
+                await MainActor.run { [weak self] in
+                    self?.isProcessingFile = false
+                    self?.fileErrorMessage = "Could not read file"
+                }
+            }
+        }
+    }
+
     /// Chunked Base64 encoding of a file (T-02-DOS: 1MB chunks, never loads entire file).
     static func encodeFileChunked(url: URL, urlSafe: Bool) async throws -> String {
         let fileHandle = try FileHandle(forReadingFrom: url)

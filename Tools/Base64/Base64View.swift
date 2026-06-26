@@ -5,6 +5,7 @@
 
 import SwiftUI
 import AppKit
+import UniformTypeIdentifiers
 
 struct Base64View: View {
     @Environment(HistoryStore.self) private var historyStore
@@ -33,6 +34,9 @@ struct Base64View: View {
 
 private struct Base64ContentView: View {
     @Bindable var viewModel: Base64ViewModel
+
+    // DIST-02: binary tool drop — accepts ANY file via the existing off-main chunked pipeline.
+    @State private var isDragTargeted = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -190,6 +194,25 @@ private struct Base64ContentView: View {
         }
         .navigationTitle("Base64 Encoder/Decoder")
         .toolShortcuts(viewModel)
+        // DIST-02 (D-06): binary tool accepts ANY dropped file — route directly to the
+        // existing off-main chunked pipeline (loadFile). No UTF-8 gate, no size cap.
+        .onDrop(of: [.fileURL], isTargeted: $isDragTargeted) { providers in
+            guard let provider = providers.first else { return false }
+            _ = provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
+                guard let data = item as? Data,
+                      let url = URL(dataRepresentation: data, relativeTo: nil) else { return }
+                Task { @MainActor in
+                    viewModel.loadFile(url: url)
+                }
+            }
+            return true
+        }
+        .overlay {
+            if isDragTargeted {
+                DropOverlayView(label: "Drop to load file")
+                    .transition(.opacity.animation(.easeOut(duration: 0.15)))
+            }
+        }
     }
 }
 
