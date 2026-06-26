@@ -112,7 +112,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 03-01-PLAN.md — Services menu routing (DIST-01): manual Info.plist + NSServices, AppDelegate/FlintServiceProvider, detect()→ToolSeed→activation-dance routing, no-match search staging
+- [x] 03-01-PLAN.md — Services menu routing (DIST-01): manual Info.plist + NSServices, AppDelegate/FlintServiceProvider, detect()→ToolSeed→activation-dance routing, no-match search staging
 
 **Wave 2** *(blocked on Wave 1 — shares MenuBarPopoverView)*
 

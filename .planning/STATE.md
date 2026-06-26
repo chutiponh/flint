@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Phase 03 UI-SPEC approved
-last_updated: "2026-06-26T10:44:06.688Z"
-last_activity: 2026-06-26 -- Phase 03 planning complete
+last_updated: "2026-06-26T10:56:40.352Z"
+last_activity: 2026-06-26
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 24
-  completed_plans: 18
+  completed_plans: 19
   percent: 67
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-25)
 
 **Core value:** A developer can paste content and get the right transformation in under a second — fully offline, from anywhere on the system, never crashing on bad input.
-**Current focus:** Phase 3 — polish & distribution
+**Current focus:** Phase 03 — polish-distribution
 
 ## Current Position
 
-Phase: 3
-Plan: Not started
+Phase: 03 (polish-distribution) — EXECUTING
+Plan: 2 of 6
 Status: Ready to execute
-Last activity: 2026-06-26 -- Phase 03 planning complete
+Last activity: 2026-06-26
 
-Progress: [██████████] 100%
+Progress: [████████░░] 79%
 
 ## Performance Metrics
 
@@ -68,6 +68,7 @@ Progress: [██████████] 100%
 | Phase 02-extended-tools P06 | 45 minutes | 2 tasks | 6 files |
 | Phase 02-extended-tools P07 | 3 minutes | 3 tasks | 1 files |
 | Phase 02-extended-tools P08 | 6 minutes | 2 tasks | 4 files |
+| Phase 03-polish-distribution P01 | 5 min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -99,6 +100,8 @@ Recent decisions affecting current work:
 - [Phase ?]: Five Phase-2 make() calls added (RESEARCH §0/A5); struct/init/detect untouched
 - [Phase ?]: Confirmed Plan 02-02 decision: nil is search-only, compliant with INFRA-06 since Regex is reachable via fuzzy search
 - [Phase ?]: Covers INFRA-06 hex color slot; narrow #RGB/#RRGGBB/#RRGGBBAA cannot shadow Phase-1 tools
+- [Phase 03-polish-distribution]: [Phase 03 Plan 01]: macOS Services 'Open in Flint' uses a Notification bridge — FlintServiceProvider posts .serviceDidReceiveText off-main; FlintApp receives on @MainActor and runs detect/seed/open. No global singletons added to FROZEN ToolRegistry/ToolSeed.
+- [Phase 03-polish-distribution]: [Phase 03 Plan 01]: Migrated app target to manual Info.plist (GENERATE_INFOPLIST_FILE=NO) because NSServices array-of-dict cannot be a scalar INFOPLIST_KEY_*; test target untouched; foundation for 03-04 Sparkle keys.
 
 ### Pending Todos
 
@@ -122,6 +125,6 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-06-26T09:44:26.929Z
+Last session: 2026-06-26T10:56:07.731Z
 Stopped at: Phase 03 UI-SPEC approved
-Resume file: .planning/phases/03-polish-distribution/03-UI-SPEC.md
+Resume file: None
