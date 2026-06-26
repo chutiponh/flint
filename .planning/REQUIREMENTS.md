@@ -93,9 +93,9 @@
 ### Extended Tools — Color (CLR)
 
 - [x] **CLR-01**: User can input any of HEX, RGB, HSL, HSV, OKLCH and see all formats output simultaneously with a preview swatch and alpha support
-- [ ] **CLR-02**: User can pick a color from anywhere on screen (NSColorSampler eyedropper) and via the system color panel
-- [ ] **CLR-03**: User can adjust R/G/B or H/S/L sliders interactively
-- [ ] **CLR-04**: Contrast checker reports WCAG AA/AAA result for two colors; any format copies in one click
+- [x] **CLR-02**: User can pick a color from anywhere on screen (NSColorSampler eyedropper) and via the system color panel
+- [x] **CLR-03**: User can adjust R/G/B or H/S/L sliders interactively
+- [x] **CLR-04**: Contrast checker reports WCAG AA/AAA result for two colors; any format copies in one click
 
 ### Extended Tools — Markdown (MD)
 
@@ -220,9 +220,9 @@
 | RGX-03 | Phase 2 | Complete |
 | RGX-04 | Phase 2 | Complete |
 | CLR-01 | Phase 2 | Complete |
-| CLR-02 | Phase 2 | Pending |
-| CLR-03 | Phase 2 | Pending |
-| CLR-04 | Phase 2 | Pending |
+| CLR-02 | Phase 2 | Complete |
+| CLR-03 | Phase 2 | Complete |
+| CLR-04 | Phase 2 | Complete |
 | MD-01 | Phase 2 | Complete |
 | MD-02 | Phase 2 | Pending |
 | MD-03 | Phase 2 | Complete |

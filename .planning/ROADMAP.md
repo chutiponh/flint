@@ -75,7 +75,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 02-03-PLAN.md — Color Converter (HEX/RGB/HSL/HSV/OKLCH, eyedropper, sliders, WCAG, out-of-gamut)
+- [x] 02-03-PLAN.md — Color Converter (HEX/RGB/HSL/HSV/OKLCH, eyedropper, sliders, WCAG, out-of-gamut)
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
@@ -119,5 +119,5 @@ Phases execute in numeric order: 1 → 2 → 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Infrastructure + Core Tools | 10/10 | Complete   | 2026-06-26 |
-| 2. Extended Tools | 2/7 | In Progress|  |
+| 2. Extended Tools | 3/7 | In Progress|  |
 | 3. Polish & Distribution | 0/TBD | Not started | - |
