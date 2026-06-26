@@ -16,6 +16,7 @@
 		0011000000000D5 /* UnicodeScalar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000000C5 /* UnicodeScalar.swift */; };
 		0011000000000D6 /* NSRegularExpression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000000C6 /* NSRegularExpression.swift */; };
 		0011000000000D7 /* github-markdown.css in Resources */ = {isa = PBXBuildFile; fileRef = 0012000000000C7 /* github-markdown.css */; };
+		0011000000000E1 /* SwiftDiffVendorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000000E1 /* SwiftDiffVendorTests.swift */; };
 		001100000000001 /* FlintApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000001 /* FlintApp.swift */; };
 		001100000000002 /* WindowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000002 /* WindowCoordinator.swift */; };
 		001100000000003 /* ToolCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000003 /* ToolCategory.swift */; };
@@ -167,6 +168,7 @@
 		0012000000000A6 /* SearchResultsMerger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultsMerger.swift; sourceTree = "<group>"; };
 		0012000000000B0 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
 		0012000000000B1 /* PinnedToolReorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedToolReorderTests.swift; sourceTree = "<group>"; };
+		0012000000000E1 /* SwiftDiffVendorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDiffVendorTests.swift; sourceTree = "<group>"; };
 		0012000000000C1 /* diff.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = diff.swift; sourceTree = "<group>"; };
 		0012000000000C2 /* cleanup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cleanup.swift; sourceTree = "<group>"; };
 		0012000000000C3 /* common.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = common.swift; sourceTree = "<group>"; };
@@ -439,6 +441,7 @@
 				0012000000009D /* UUIDTransformerTests.swift */,
 				0012000000000A5 /* HistorySearchTests.swift */,
 				0012000000000B1 /* PinnedToolReorderTests.swift */,
+				0012000000000E1 /* SwiftDiffVendorTests.swift */,
 			);
 			path = FlintTests;
 			sourceTree = "<group>";
@@ -650,6 +653,7 @@
 				00110000000009D /* UUIDTransformerTests.swift in Sources */,
 				0011000000000A5 /* HistorySearchTests.swift in Sources */,
 				0011000000000B1 /* PinnedToolReorderTests.swift in Sources */,
+				0011000000000E1 /* SwiftDiffVendorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
