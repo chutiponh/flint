@@ -20,6 +20,19 @@ final class ToolRegistry {
             TimestampDefinition.make(),
             HashDefinition.make(),
             UUIDDefinition.make(),
+            // SANCTIONED PHASE-2 APPEND (RESEARCH §0 / A5 — "the one allowed frozen-file edit").
+            // These five lines are the single explicitly-approved mutation of ToolRegistry.
+            // Detection-chain ordering (first-match-wins, INFRA-06):
+            //   - ColorDefinition has a narrow #RGB/#RRGGBB/#RRGGBBAA predicate; placed first among
+            //     Phase-2 entries — it cannot false-positive on JSON/Base64/URL/JWT shapes.
+            //   - RegexDefinition.detectionPredicate = nil (search-only). A /…/ predicate was
+            //     considered but rejected in Plan 02-02 to avoid shadowing the detection chain.
+            //   - MarkdownDefinition, NumberBaseDefinition, TextDiffDefinition: all nil (search-only).
+            RegexDefinition.make(),
+            ColorDefinition.make(),
+            MarkdownDefinition.make(),
+            NumberBaseDefinition.make(),
+            TextDiffDefinition.make(),
         ]
     }
 
