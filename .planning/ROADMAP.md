@@ -119,5 +119,5 @@ Phases execute in numeric order: 1 → 2 → 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Infrastructure + Core Tools | 10/10 | Complete   | 2026-06-26 |
-| 2. Extended Tools | 7/7 | Complete   | 2026-06-26 |
+| 2. Extended Tools | 8/8 | Complete   | 2026-06-26 |
 | 3. Polish & Distribution | 0/TBD | Not started | - |
