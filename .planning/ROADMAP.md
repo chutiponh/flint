@@ -108,23 +108,24 @@ Plans:
   3. App ships as a signed, notarized DMG that mounts and installs without a Gatekeeper warning; a first-run onboarding flow greets new users
   4. App auto-updates via Sparkle with EdDSA-signed update bundles; the v0.0.1 to v0.0.2 pipeline is validated locally before the v1.0 release; the EdDSA public key is embedded in Info.plist from first release
 
-**Plans**: 5 plans (5 sequential waves — heavy shared-file overlap on FlintApp/WindowCoordinator/Info.plist)
+**Plans**: 6 plans (5 waves — 03-02 split into 03-02a/03-02b per checker; heavy shared-file overlap on FlintApp/WindowCoordinator/Info.plist)
 Plans:
 **Wave 1**
 
 - [ ] 03-01-PLAN.md — Services menu routing (DIST-01): manual Info.plist + NSServices, AppDelegate/FlintServiceProvider, detect()→ToolSeed→activation-dance routing, no-match search staging
 
-**Wave 2** *(blocked on Wave 1 — shares WindowCoordinator/MenuBarPopoverView)*
+**Wave 2** *(blocked on Wave 1 — shares MenuBarPopoverView)*
 
-- [ ] 03-02-PLAN.md — Drag-and-drop (DIST-02): DropOverlayView + shared FileDropHandler, any-file drop on Base64/Hash via chunked pipeline, text-tool drops + binary rejection, launcher detect() routing
+- [ ] 03-02a-PLAN.md — Drag-and-drop foundation + binary (DIST-02): DropOverlayView (single state) + shared FileDropHandler, any-file drop on Base64/Hash via chunked pipeline, launcher detect() routing + post-drop WarningBannerView rejection
 
-**Wave 3** *(blocked on Wave 1 — extends Info.plist + FlintApp)*
+**Wave 3** *(blocked on Wave 1/2)*
 
-- [ ] 03-03-PLAN.md — Sparkle code wiring (DIST-04): Sparkle 2.9.3 SPM, SUPublicEDKey+SUFeedURL in Info.plist [BLOCKING: key from first build], lazy SparkleUpdaterService off cold-start path
+- [ ] 03-02b-PLAN.md — Drag-and-drop text tools (DIST-02): apply shared .fileDrop + DropOverlayView to the 9 text-tool views (mechanical boilerplate), end-to-end drop verification *(depends on 03-02a)*
+- [ ] 03-03-PLAN.md — Sparkle code wiring (DIST-04): Sparkle 2.9.3 SPM, SUPublicEDKey+SUFeedURL in Info.plist [BLOCKING: key from first build], lazy SparkleUpdaterService off cold-start path *(depends on 03-01, 03-02a — shares MenuBarPopoverView)*
 
 **Wave 4** *(blocked on Wave 1 + 3 — shares FlintApp/WindowCoordinator/Info.plist)*
 
-- [ ] 03-04-PLAN.md — First-run onboarding (DIST-03): hasSeenOnboarding pref, OnboardingWindowView (menubar callout + hotkey + Launch-at-Login CTA), openOnboarding activation dance
+- [ ] 03-04-PLAN.md — First-run onboarding (DIST-03) + full-app VoiceOver audit (INFRA-15): hasSeenOnboarding pref, OnboardingWindowView, openOnboarding activation dance, and a BLOCKING VoiceOver audit across all 12 tools + launcher + 3 Phase 3 surfaces
 
 **Wave 5** *(blocked on Wave 1 + 3 + 4 — distribution capstone, non-autonomous)*
 
@@ -141,4 +142,4 @@ Phases execute in numeric order: 1 → 2 → 3
 |-------|----------------|--------|-----------|
 | 1. Infrastructure + Core Tools | 10/10 | Complete   | 2026-06-26 |
 | 2. Extended Tools | 8/8 | Complete   | 2026-06-26 |
-| 3. Polish & Distribution | 0/5 | Not started | - |
+| 3. Polish & Distribution | 0/6 | Not started | - |

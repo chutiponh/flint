@@ -837,22 +837,25 @@ defaults delete com.flint.app SULastCheckTime
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **NSServices Info.plist with GENERATE_INFOPLIST_FILE=YES in Xcode 16**
    - What we know: The project uses generated Info.plist; NSServices is a complex nested structure.
    - What's unclear: Whether Xcode 16's target Info tab supports array-of-dict entries like NSServices natively, or if a manual Info.plist is required.
    - Recommendation: Test in Wave 0 (DIST-01 setup). If Xcode Info tab supports it, use it. Otherwise, create `Info.plist` manually and set `INFOPLIST_FILE` build setting.
+   - **RESOLVED:** Plan 03-01 (Task 1) creates a manual `Info.plist` and sets `GENERATE_INFOPLIST_FILE=NO` + `INFOPLIST_FILE=Info.plist` for the app target (NSServices array-of-dict cannot be a scalar `INFOPLIST_KEY_*`). Manual plist confirmed required.
 
 2. **ToolRegistry / ToolSeed access from FlintServiceProvider**
    - What we know: Both are `@State` objects owned by `FlintApp`; `FlintServiceProvider` is an NSObject created before the SwiftUI environment is ready.
    - What's unclear: Whether the Notification-based bridge pattern introduces any ordering issues (FlintApp must subscribe before any service invocation arrives).
    - Recommendation: Subscribe to `.serviceDidReceiveText` in `FlintApp.body` using `.onReceive` inside the `MenuBarExtra` content. The MenuBarExtra is created at app launch, so this subscription is in place before any user action can trigger a service invocation.
+   - **RESOLVED:** Plan 03-01 uses the Notification bridge: `FlintServiceProvider` posts `.serviceDidReceiveText` (off-main); `FlintApp` subscribes via `.onReceive(...)` inside the `MenuBarExtra` content (created at launch, before any service invocation), then performs `toolRegistry.detect → toolSeed.set → openToolViaService` on `@MainActor`. No direct `ToolRegistry`/`ToolSeed` access from the provider; FROZEN substrate untouched.
 
 3. **Appcast hosting URL for v0.0.1→v0.0.2 dry-run**
    - What we know: `SUFeedURL` must be a resolvable URL; Sparkle will not check a local file URL in production mode.
    - What's unclear: Whether a localhost HTTP server (via `python3 -m http.server`) is sufficient for the local dry-run, or if Sparkle requires HTTPS.
    - Recommendation: Test with localhost HTTP first. If Sparkle requires HTTPS, use a staging server or a tunneling service (ngrok) for the dry-run. Update `SUFeedURL` to the production URL before the real v1.0 release.
+   - **RESOLVED:** Plan 03-05 (`dry-run-update.sh`) uses localhost HTTP (`python3 -m http.server 8000` → `http://localhost:8000/appcast.xml`) for the v0.0.1→v0.0.2 dry-run, with the HTTPS fallback (staging server / ngrok) documented in the script and `DISTRIBUTION.md`; `SUFeedURL` is swapped to the production HTTPS URL before v1.0.
 
 ---
 
