@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0011000000000C1 /* ChromaKit in Frameworks */ = {isa = PBXBuildFile; productRef = 001300000000021 /* ChromaKit */; };
+		0011000000000C2 /* Markdown in Frameworks */ = {isa = PBXBuildFile; productRef = 001300000000022 /* Markdown */; };
 		001100000000001 /* FlintApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000001 /* FlintApp.swift */; };
 		001100000000002 /* WindowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000002 /* WindowCoordinator.swift */; };
 		001100000000003 /* ToolCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000003 /* ToolCategory.swift */; };
@@ -171,6 +173,8 @@
 				001100000000052 /* MenuBarExtraAccess in Frameworks */,
 				001100000000053 /* HighlightSwift in Frameworks */,
 				00110000000009E /* UUIDv7 in Frameworks */,
+				0011000000000C1 /* ChromaKit in Frameworks */,
+				0011000000000C2 /* Markdown in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -438,6 +442,8 @@
 				001300000000003 /* MenuBarExtraAccess */,
 				001300000000004 /* HighlightSwift */,
 				001300000000005 /* UUIDv7 */,
+				001300000000021 /* ChromaKit */,
+				001300000000022 /* Markdown */,
 			);
 			productName = Flint;
 			productReference = 001200000000090 /* Flint.app */;
@@ -497,6 +503,8 @@
 				001B00000000003 /* XCRemoteSwiftPackageReference "MenuBarExtraAccess" */,
 				001B00000000004 /* XCRemoteSwiftPackageReference "HighlightSwift" */,
 				001B00000000005 /* XCRemoteSwiftPackageReference "UUIDv7" */,
+				001B00000000006 /* XCRemoteSwiftPackageReference "ChromaKit" */,
+				001B00000000007 /* XCRemoteSwiftPackageReference "swift-markdown" */,
 			);
 			productRefGroup = 001500000000000 /* Products */;
 			projectDirPath = "";
@@ -910,6 +918,22 @@
 				revision = "186b273ed1374fab5708633344e10b70af115929";
 			};
 		};
+		001B00000000006 /* XCRemoteSwiftPackageReference "ChromaKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/HarshilShah/ChromaKit";
+			requirement = {
+				kind = exactVersion;
+				version = "0.1.1";
+			};
+		};
+		001B00000000007 /* XCRemoteSwiftPackageReference "swift-markdown" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/swiftlang/swift-markdown";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = "0.8.0";
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -942,6 +966,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 001B00000000005 /* XCRemoteSwiftPackageReference "UUIDv7" */;
 			productName = UUIDv7;
+		};
+		001300000000021 /* ChromaKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 001B00000000006 /* XCRemoteSwiftPackageReference "ChromaKit" */;
+			productName = ChromaKit;
+		};
+		001300000000022 /* Markdown */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 001B00000000007 /* XCRemoteSwiftPackageReference "swift-markdown" */;
+			productName = Markdown;
 		};
 /* End XCSwiftPackageProductDependency section */
 
