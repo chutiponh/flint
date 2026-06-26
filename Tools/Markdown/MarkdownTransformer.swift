@@ -226,12 +226,12 @@ private struct HTMLVisitor: MarkupVisitor {
 
     mutating func visitLink(_ link: Link) -> String {
         let inner = visitChildren(link)
-        let dest = htmlEscape(link.destination ?? "")
+        let dest = htmlEscape(sanitizeURL(link.destination ?? ""))
         return "<a href=\"\(dest)\">\(inner)</a>"
     }
 
     mutating func visitImage(_ image: Image) -> String {
-        let src = htmlEscape(image.source ?? "")
+        let src = htmlEscape(sanitizeURL(image.source ?? ""))
         let alt = image.plainText
         return "<img src=\"\(src)\" alt=\"\(htmlEscape(alt))\">"
     }
@@ -274,6 +274,28 @@ private struct HTMLVisitor: MarkupVisitor {
 
     mutating func defaultVisit(_ markup: any Markup) -> String {
         visitChildren(markup)
+    }
+
+    // MARK: - URL sanitizing (XSS hardening — block javascript:/data:/vbscript: in link & image URLs)
+
+    /// Neutralizes dangerous URL schemes in link/image destinations. An `href="javascript:…"`
+    /// survives htmlEscape intact, so escaping alone is not enough at this trust boundary.
+    /// Allowlist by scheme: http/https/mailto/tel and scheme-relative/relative/anchor URLs pass;
+    /// anything else (javascript:, data:, vbscript:, file:, …) is replaced with "#".
+    private func sanitizeURL(_ s: String) -> String {
+        let trimmed = s.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Strip control chars (incl. tabs/newlines) attackers use to break "java\tscript:".
+        let cleaned = trimmed.unicodeScalars.filter { !($0.value < 0x20 || $0.value == 0x7F) }
+        let url = String(String.UnicodeScalarView(cleaned))
+        // No scheme (relative, "#anchor", "/path", "//host", "?q=") → safe.
+        guard let colon = url.firstIndex(of: ":") else { return url }
+        // A "/" or "#" or "?" before the colon means it's a path, not a scheme.
+        if let sep = url.firstIndex(where: { $0 == "/" || $0 == "#" || $0 == "?" }), sep < colon {
+            return url
+        }
+        let scheme = url[url.startIndex..<colon].lowercased()
+        let allowed: Set<String> = ["http", "https", "mailto", "tel"]
+        return allowed.contains(scheme) ? url : "#"
     }
 
     // MARK: - HTML escaping (XSS hardening — T-02-MD-XSS)

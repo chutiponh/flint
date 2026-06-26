@@ -121,6 +121,37 @@ final class MarkdownTransformerTests: XCTestCase {
                        "Raw HTML injection should be escaped, got: \(html)")
     }
 
+    // MARK: - MD-01: XSS via dangerous URL schemes in links/images must be neutralized
+
+    func testXSSLink_javascriptScheme_neutralized() throws {
+        let result = MarkdownTransformer.renderHTML("[click](javascript:alert(1))")
+        guard case .success(let html) = result else {
+            XCTFail("Expected success, got \(result)"); return
+        }
+        XCTAssertFalse(html.lowercased().contains("javascript:"),
+                       "javascript: scheme must be stripped from href, got: \(html)")
+        XCTAssertTrue(html.contains("href=\"#\""),
+                      "Dangerous link should be rewritten to #, got: \(html)")
+    }
+
+    func testXSSImage_dataScheme_neutralized() throws {
+        let result = MarkdownTransformer.renderHTML("![x](data:text/html,<script>alert(1)</script>)")
+        guard case .success(let html) = result else {
+            XCTFail("Expected success, got \(result)"); return
+        }
+        XCTAssertFalse(html.lowercased().contains("data:"),
+                       "data: scheme must be stripped from img src, got: \(html)")
+    }
+
+    func testSafeLink_httpsPreserved() throws {
+        let result = MarkdownTransformer.renderHTML("[ok](https://example.com/a?b=1#c)")
+        guard case .success(let html) = result else {
+            XCTFail("Expected success, got \(result)"); return
+        }
+        XCTAssertTrue(html.contains("href=\"https://example.com/a?b=1#c\""),
+                      "Safe https URL must be preserved, got: \(html)")
+    }
+
     // MARK: - MD-04: wordCount pure function
 
     func testWordCount_threeWords() {
