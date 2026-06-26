@@ -27,6 +27,12 @@
 		001100000003003 /* ColorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000003003 /* ColorView.swift */; };
 		001100000003004 /* ColorDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000003004 /* ColorDefinition.swift */; };
 		001100000003005 /* ColorTransformerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000003005 /* ColorTransformerTests.swift */; };
+		001100000004001 /* MarkdownTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000004001 /* MarkdownTransformer.swift */; };
+		001100000004002 /* MarkdownViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000004002 /* MarkdownViewModel.swift */; };
+		001100000004003 /* MarkdownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000004003 /* MarkdownView.swift */; };
+		001100000004004 /* MarkdownDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000004004 /* MarkdownDefinition.swift */; };
+		001100000004005 /* MarkdownTransformerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000004005 /* MarkdownTransformerTests.swift */; };
+		001100000004006 /* WebPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000004006 /* WebPreviewView.swift */; };
 		001100000000001 /* FlintApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000001 /* FlintApp.swift */; };
 		001100000000002 /* WindowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000002 /* WindowCoordinator.swift */; };
 		001100000000003 /* ToolCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000003 /* ToolCategory.swift */; };
@@ -189,6 +195,12 @@
 		001200000003003 /* ColorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorView.swift; sourceTree = "<group>"; };
 		001200000003004 /* ColorDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorDefinition.swift; sourceTree = "<group>"; };
 		001200000003005 /* ColorTransformerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorTransformerTests.swift; sourceTree = "<group>"; };
+		001200000004001 /* MarkdownTransformer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownTransformer.swift; sourceTree = "<group>"; };
+		001200000004002 /* MarkdownViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownViewModel.swift; sourceTree = "<group>"; };
+		001200000004003 /* MarkdownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownView.swift; sourceTree = "<group>"; };
+		001200000004004 /* MarkdownDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownDefinition.swift; sourceTree = "<group>"; };
+		001200000004005 /* MarkdownTransformerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownTransformerTests.swift; sourceTree = "<group>"; };
+		001200000004006 /* WebPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebPreviewView.swift; sourceTree = "<group>"; };
 		0012000000000C1 /* diff.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = diff.swift; sourceTree = "<group>"; };
 		0012000000000C2 /* cleanup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cleanup.swift; sourceTree = "<group>"; };
 		0012000000000C3 /* common.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = common.swift; sourceTree = "<group>"; };
@@ -308,6 +320,7 @@
 				001500000000020 /* TextDiff */,
 				001500000002001 /* Regex */,
 				001500000003001 /* Color */,
+				001500000004001 /* Markdown */,
 			);
 			path = Tools;
 			sourceTree = "<group>";
@@ -340,6 +353,17 @@
 				001200000003004 /* ColorDefinition.swift */,
 			);
 			path = Color;
+			sourceTree = "<group>";
+		};
+		001500000004001 /* Markdown */ = {
+			isa = PBXGroup;
+			children = (
+				001200000004001 /* MarkdownTransformer.swift */,
+				001200000004002 /* MarkdownViewModel.swift */,
+				001200000004003 /* MarkdownView.swift */,
+				001200000004004 /* MarkdownDefinition.swift */,
+			);
+			path = Markdown;
 			sourceTree = "<group>";
 		};
 		001500000000021 /* SwiftDiff */ = {
@@ -458,6 +482,7 @@
 				0012000000000A1 /* HistoryRowView.swift */,
 				0012000000000A4 /* PinnedToolBarView.swift */,
 				0012000000000B2 /* ToolShortcutActions.swift */,
+				001200000004006 /* WebPreviewView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -488,6 +513,7 @@
 				0012000000000E1 /* SwiftDiffVendorTests.swift */,
 				001200000002005 /* RegexTransformerTests.swift */,
 				001200000003005 /* ColorTransformerTests.swift */,
+				001200000004005 /* MarkdownTransformerTests.swift */,
 			);
 			path = FlintTests;
 			sourceTree = "<group>";
@@ -691,6 +717,11 @@
 				001100000003002 /* ColorViewModel.swift in Sources */,
 				001100000003003 /* ColorView.swift in Sources */,
 				001100000003004 /* ColorDefinition.swift in Sources */,
+				001100000004001 /* MarkdownTransformer.swift in Sources */,
+				001100000004002 /* MarkdownViewModel.swift in Sources */,
+				001100000004003 /* MarkdownView.swift in Sources */,
+				001100000004004 /* MarkdownDefinition.swift in Sources */,
+				001100000004006 /* WebPreviewView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -710,6 +741,7 @@
 				0011000000000E1 /* SwiftDiffVendorTests.swift in Sources */,
 				001100000002005 /* RegexTransformerTests.swift in Sources */,
 				001100000003005 /* ColorTransformerTests.swift in Sources */,
+				001100000004005 /* MarkdownTransformerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
