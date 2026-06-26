@@ -121,6 +121,17 @@ struct MenuBarPopoverView: View {
         .onReceive(NotificationCenter.default.publisher(for: .showPopover)) { _ in
             clipboard.isPopoverPresented = true
         }
+        // Esc forwarded from the focused SyntaxEditorView NSTextView (INFRA-16 / UAT Test 16 fix).
+        // When the editor holds first-responder focus, AppKit delivers Esc to the NSTextView which
+        // consumes it via cancelOperation, so the .onKeyPress(.escape) below never fires. The
+        // SyntaxEditorView.Coordinator intercepts cancelOperation, posts .escapePressed, and returns
+        // true — preventing the text view from consuming Esc. We pick it up here and run the same
+        // two-stage handler. No debounce needed: when the editor is focused only this path fires
+        // (cancelOperation intercepted → .escapePressed); when it is unfocused only .onKeyPress
+        // fires (key reaches SwiftUI unimpeded). The two paths are mutually exclusive.
+        .onReceive(NotificationCenter.default.publisher(for: .escapePressed)) { _ in
+            handleEscape()
+        }
         // INFRA-16: Global keyboard shortcuts — wired via hidden overlay buttons in .background()
         // ⌘H — toggle history panel (D-07)
         .background(
