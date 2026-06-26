@@ -44,6 +44,7 @@
 		001100000000002 /* WindowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000002 /* WindowCoordinator.swift */; };
 		0011000000000B1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000000B1 /* AppDelegate.swift */; };
 		0011000000000B2 /* FlintServiceProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000000B2 /* FlintServiceProvider.swift */; };
+		0011000000000B3 /* SparkleUpdaterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000000B3 /* SparkleUpdaterService.swift */; };
 		00110000000DD01 /* DropOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00120000000DD01 /* DropOverlayView.swift */; };
 		00110000000DD02 /* FileDropHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00120000000DD02 /* FileDropHandler.swift */; };
 		001100000000003 /* ToolCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000003 /* ToolCategory.swift */; };
@@ -88,6 +89,7 @@
 		001100000000051 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = 001300000000002 /* KeyboardShortcuts */; };
 		001100000000052 /* MenuBarExtraAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 001300000000003 /* MenuBarExtraAccess */; };
 		001100000000053 /* HighlightSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 001300000000004 /* HighlightSwift */; };
+		001100000000054 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 001300000000023 /* Sparkle */; };
 		001100000000060 /* GRDB in Frameworks (Tests) */ = {isa = PBXBuildFile; productRef = 001300000000011 /* GRDB */; };
 		001100000000061 /* Data+Base64URL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000041 /* Data+Base64URL.swift */; };
 		001100000000062 /* JWTTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000042 /* JWTTransformer.swift */; };
@@ -131,6 +133,7 @@
 		001200000000002 /* WindowCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowCoordinator.swift; sourceTree = "<group>"; };
 		0012000000000B1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0012000000000B2 /* FlintServiceProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlintServiceProvider.swift; sourceTree = "<group>"; };
+		0012000000000B3 /* SparkleUpdaterService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SparkleUpdaterService.swift; sourceTree = "<group>"; };
 		00120000000DD01 /* DropOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropOverlayView.swift; sourceTree = "<group>"; };
 		00120000000DD02 /* FileDropHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDropHandler.swift; sourceTree = "<group>"; };
 		001200000000003 /* ToolCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolCategory.swift; sourceTree = "<group>"; };
@@ -256,6 +259,7 @@
 				00110000000009E /* UUIDv7 in Frameworks */,
 				0011000000000C1 /* ChromaKit in Frameworks */,
 				0011000000000C2 /* Markdown in Frameworks */,
+				001100000000054 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -328,6 +332,7 @@
 				00120000000000B /* HotkeyManager.swift */,
 				0012000000000A6 /* SearchResultsMerger.swift */,
 				0012000000000B2 /* FlintServiceProvider.swift */,
+				0012000000000B3 /* SparkleUpdaterService.swift */,
 				00120000000DD02 /* FileDropHandler.swift */,
 			);
 			path = Services;
@@ -614,6 +619,7 @@
 				001300000000005 /* UUIDv7 */,
 				001300000000021 /* ChromaKit */,
 				001300000000022 /* Markdown */,
+				001300000000023 /* Sparkle */,
 			);
 			productName = Flint;
 			productReference = 001200000000090 /* Flint.app */;
@@ -675,6 +681,7 @@
 				001B00000000005 /* XCRemoteSwiftPackageReference "UUIDv7" */,
 				001B00000000006 /* XCRemoteSwiftPackageReference "ChromaKit" */,
 				001B00000000007 /* XCRemoteSwiftPackageReference "swift-markdown" */,
+				001B00000000008 /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			productRefGroup = 001500000000000 /* Products */;
 			projectDirPath = "";
@@ -707,6 +714,7 @@
 				001100000000002 /* WindowCoordinator.swift in Sources */,
 				0011000000000B1 /* AppDelegate.swift in Sources */,
 				0011000000000B2 /* FlintServiceProvider.swift in Sources */,
+				0011000000000B3 /* SparkleUpdaterService.swift in Sources */,
 				00110000000DD01 /* DropOverlayView.swift in Sources */,
 				00110000000DD02 /* FileDropHandler.swift in Sources */,
 				001100000000003 /* ToolCategory.swift in Sources */,
@@ -1134,6 +1142,14 @@
 				minimumVersion = "0.8.0";
 			};
 		};
+			001B00000000008 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+				isa = XCRemoteSwiftPackageReference;
+				repositoryURL = "https://github.com/sparkle-project/Sparkle";
+				requirement = {
+					kind = exactVersion;
+					version = "2.9.3";
+				};
+			};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1177,6 +1193,11 @@
 			package = 001B00000000007 /* XCRemoteSwiftPackageReference "swift-markdown" */;
 			productName = Markdown;
 		};
+			001300000000023 /* Sparkle */ = {
+				isa = XCSwiftPackageProductDependency;
+				package = 001B00000000008 /* XCRemoteSwiftPackageReference "Sparkle" */;
+				productName = Sparkle;
+			};
 /* End XCSwiftPackageProductDependency section */
 
 	};
