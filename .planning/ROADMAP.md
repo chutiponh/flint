@@ -67,7 +67,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 02-01-PLAN.md — Dependency setup: ChromaKit + swift-markdown (SPM), vendored+patched SwiftDiff, bundled GitHub CSS
+- [x] 02-01-PLAN.md — Dependency setup: ChromaKit + swift-markdown (SPM), vendored+patched SwiftDiff, bundled GitHub CSS
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -119,5 +119,5 @@ Phases execute in numeric order: 1 → 2 → 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Infrastructure + Core Tools | 10/10 | Complete   | 2026-06-26 |
-| 2. Extended Tools | 0/7 | Planned | - |
+| 2. Extended Tools | 1/7 | In Progress|  |
 | 3. Polish & Distribution | 0/TBD | Not started | - |

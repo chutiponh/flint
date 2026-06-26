@@ -92,16 +92,16 @@
 
 ### Extended Tools — Color (CLR)
 
-- [ ] **CLR-01**: User can input any of HEX, RGB, HSL, HSV, OKLCH and see all formats output simultaneously with a preview swatch and alpha support
+- [x] **CLR-01**: User can input any of HEX, RGB, HSL, HSV, OKLCH and see all formats output simultaneously with a preview swatch and alpha support
 - [ ] **CLR-02**: User can pick a color from anywhere on screen (NSColorSampler eyedropper) and via the system color panel
 - [ ] **CLR-03**: User can adjust R/G/B or H/S/L sliders interactively
 - [ ] **CLR-04**: Contrast checker reports WCAG AA/AAA result for two colors; any format copies in one click
 
 ### Extended Tools — Markdown (MD)
 
-- [ ] **MD-01**: Split editor/preview view renders GFM live (tables, strikethrough, task lists, fenced code) with debounced updates
+- [x] **MD-01**: Split editor/preview view renders GFM live (tables, strikethrough, task lists, fenced code) with debounced updates
 - [ ] **MD-02**: Editor highlights Markdown syntax; preview highlights code blocks
-- [ ] **MD-03**: User can export as copied HTML, saved `.html`, or saved `.pdf` (WKWebView)
+- [x] **MD-03**: User can export as copied HTML, saved `.html`, or saved `.pdf` (WKWebView)
 - [ ] **MD-04**: Tool shows word count and reading-time estimate; toolbar inserts bold/italic/link/image/code/table
 
 ### Extended Tools — Number Base (NUM)
@@ -113,7 +113,7 @@
 ### Extended Tools — Text Diff (DIFF)
 
 - [ ] **DIFF-01**: User can compare two text blocks in side-by-side or unified view (toggle)
-- [ ] **DIFF-02**: Diff shows line-level changes with word-level highlighting, added/removed/unchanged color coding, and line numbers
+- [x] **DIFF-02**: Diff shows line-level changes with word-level highlighting, added/removed/unchanged color coding, and line numbers
 - [ ] **DIFF-03**: User can jump to next/previous difference and copy the diff as a unified patch
 - [ ] **DIFF-04**: User can toggle ignore-whitespace and ignore-case
 
@@ -219,19 +219,19 @@
 | RGX-02 | Phase 2 | Pending |
 | RGX-03 | Phase 2 | Pending |
 | RGX-04 | Phase 2 | Pending |
-| CLR-01 | Phase 2 | Pending |
+| CLR-01 | Phase 2 | Complete |
 | CLR-02 | Phase 2 | Pending |
 | CLR-03 | Phase 2 | Pending |
 | CLR-04 | Phase 2 | Pending |
-| MD-01 | Phase 2 | Pending |
+| MD-01 | Phase 2 | Complete |
 | MD-02 | Phase 2 | Pending |
-| MD-03 | Phase 2 | Pending |
+| MD-03 | Phase 2 | Complete |
 | MD-04 | Phase 2 | Pending |
 | NUM-01 | Phase 2 | Pending |
 | NUM-02 | Phase 2 | Pending |
 | NUM-03 | Phase 2 | Pending |
 | DIFF-01 | Phase 2 | Pending |
-| DIFF-02 | Phase 2 | Pending |
+| DIFF-02 | Phase 2 | Complete |
 | DIFF-03 | Phase 2 | Pending |
 | DIFF-04 | Phase 2 | Pending |
 | DIST-01 | Phase 3 | Pending |
