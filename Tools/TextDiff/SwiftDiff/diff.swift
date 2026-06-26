@@ -56,305 +56,213 @@ public func diff(text1: String, text2: String, timeout: CFTimeInterval? = nil) -
     if text1.isEmpty { return [.insert(text2)] }
     if text2.isEmpty { return [.delete(text1)] }
 
-    // Trim common prefix
-    let prefixLen = commonPrefixLength(text1, text2)
-    let scalars1 = text1.unicodeScalars
-    let scalars2 = text2.unicodeScalars
-    let count1 = scalars1.count
-    let count2 = scalars2.count
+    let s1 = Array(text1.unicodeScalars)
+    let s2 = Array(text2.unicodeScalars)
+    let count1 = s1.count
+    let count2 = s2.count
 
-    let commonPrefix = prefixLen > 0 ? text1[0..<prefixLen] : ""
+    // Trim common prefix
+    var prefixLen = 0
+    while prefixLen < count1 && prefixLen < count2 && s1[prefixLen] == s2[prefixLen] {
+        prefixLen += 1
+    }
 
     // Trim common suffix
-    let suffixLen = commonSuffixLength(
-        text1[prefixLen..<count1],
-        text2[prefixLen..<count2]
-    )
-    let commonSuffix = suffixLen > 0 ? text1[(count1 - suffixLen)..<count1] : ""
+    var suffixLen = 0
+    while suffixLen < count1 - prefixLen && suffixLen < count2 - prefixLen
+        && s1[count1 - 1 - suffixLen] == s2[count2 - 1 - suffixLen] {
+        suffixLen += 1
+    }
 
-    let mid1 = text1[prefixLen..<(count1 - suffixLen)]
-    let mid2 = text2[prefixLen..<(count2 - suffixLen)]
+    let commonPrefix = prefixLen > 0 ? String(s1.prefix(prefixLen).map { Character($0) }) : ""
+    let commonSuffix = suffixLen > 0 ? String(s1.suffix(suffixLen).map { Character($0) }) : ""
 
-    var diffs = computeDiff(mid1, mid2, deadline: deadline)
+    let mid1 = Array(s1[prefixLen..<(count1 - suffixLen)])
+    let mid2 = Array(s2[prefixLen..<(count2 - suffixLen)])
+
+    var diffs = computeDiffScalars(mid1, mid2, deadline: deadline)
 
     if !commonPrefix.isEmpty { diffs.insert(.equal(commonPrefix), at: 0) }
     if !commonSuffix.isEmpty { diffs.append(.equal(commonSuffix)) }
 
-    cleanupMerge(&diffs)
+    mergeDiffs(&diffs)
     return diffs
 }
 
-// MARK: - Core diff computation
+// MARK: - Core diff computation (Unicode scalar arrays)
 
-private func computeDiff(_ text1: String, _ text2: String, deadline: CFAbsoluteTime?) -> [Diff] {
-    if text1.isEmpty { return [.insert(text2)] }
-    if text2.isEmpty { return [.delete(text1)] }
+private func computeDiffScalars(_ s1: [Unicode.Scalar], _ s2: [Unicode.Scalar],
+                                deadline: CFAbsoluteTime?) -> [Diff] {
+    if s1.isEmpty { return [.insert(String(s2.map { Character($0) }))] }
+    if s2.isEmpty { return [.delete(String(s1.map { Character($0) }))] }
 
-    let scalars1 = text1.unicodeScalars
-    let scalars2 = text2.unicodeScalars
-    let len1 = scalars1.count
-    let len2 = scalars2.count
+    let len1 = s1.count
+    let len2 = s2.count
 
-    // Substring detection: does one string contain the other?
-    if len1 == 1 || len2 == 1 {
-        // Single-character — fall through to Myers
-    } else if let range = text2.range(of: text1) {
-        // text1 is inside text2
-        let before = String(text2[text2.startIndex..<range.lowerBound])
-        let after = String(text2[range.upperBound..<text2.endIndex])
-        var result: [Diff] = []
-        if !before.isEmpty { result.append(.insert(before)) }
-        result.append(.equal(text1))
-        if !after.isEmpty { result.append(.insert(after)) }
-        return result
-    } else if let range = text1.range(of: text2) {
-        let before = String(text1[text1.startIndex..<range.lowerBound])
-        let after = String(text1[range.upperBound..<text1.endIndex])
-        var result: [Diff] = []
-        if !before.isEmpty { result.append(.delete(before)) }
-        result.append(.equal(text2))
-        if !after.isEmpty { result.append(.delete(after)) }
-        return result
+    // Single char: direct comparison
+    if len1 == 1 && len2 == 1 {
+        if s1[0] == s2[0] { return [.equal(String(s1[0]))] }
+        return [.delete(String(s1[0])), .insert(String(s2[0]))]
     }
 
-    // Myers diff via bisect
-    return bisect(text1, text2, deadline: deadline)
+    // Check if shorter is inside longer
+    if len1 > len2 {
+        // Is s2 inside s1?
+        if let range = findSubarray(needle: s2, in: s1) {
+            var result: [Diff] = []
+            if range.lowerBound > 0 { result.append(.delete(String(s1[0..<range.lowerBound].map { Character($0) }))) }
+            result.append(.equal(String(s2.map { Character($0) })))
+            if range.upperBound < len1 { result.append(.delete(String(s1[range.upperBound...].map { Character($0) }))) }
+            return result
+        }
+    } else if len2 > len1 {
+        // Is s1 inside s2?
+        if let range = findSubarray(needle: s1, in: s2) {
+            var result: [Diff] = []
+            if range.lowerBound > 0 { result.append(.insert(String(s2[0..<range.lowerBound].map { Character($0) }))) }
+            result.append(.equal(String(s1.map { Character($0) })))
+            if range.upperBound < len2 { result.append(.insert(String(s2[range.upperBound...].map { Character($0) }))) }
+            return result
+        }
+    }
+
+    // Myers diff
+    return myersDiff(s1, s2, deadline: deadline)
 }
 
-// MARK: - Myers diff (bisect)
+// MARK: - Subarray search
 
-private func bisect(_ text1: String, _ text2: String, deadline: CFAbsoluteTime?) -> [Diff] {
-    let scalars1 = Array(text1.unicodeScalars)
-    let scalars2 = Array(text2.unicodeScalars)
-    let len1 = scalars1.count
-    let len2 = scalars2.count
-    let maxD = (len1 + len2 + 1) / 2
-    let vLen = 2 * maxD
-    var v1 = [Int](repeating: -1, count: vLen)
-    var v2 = [Int](repeating: -1, count: vLen)
-    v1[maxD + 1] = 0
-    v2[maxD + 1] = 0
-    let delta = len1 - len2
-    let front = (delta % 2 != 0)
+private func findSubarray(needle: [Unicode.Scalar], in haystack: [Unicode.Scalar]) -> Range<Int>? {
+    let n = needle.count
+    let h = haystack.count
+    guard n > 0, n <= h else { return nil }
+    for i in 0...(h - n) {
+        if haystack[i..<(i + n)].elementsEqual(needle) {
+            return i..<(i + n)
+        }
+    }
+    return nil
+}
 
-    var k1start = 0
-    var k1end = 0
-    var k2start = 0
-    var k2end = 0
+// MARK: - Myers diff algorithm
 
-    for d in 0..<maxD {
+/// Myers diff: O((N+M)*D) edit script computation.
+private func myersDiff(_ s1: [Unicode.Scalar], _ s2: [Unicode.Scalar],
+                       deadline: CFAbsoluteTime?) -> [Diff] {
+    let n = s1.count
+    let m = s2.count
+    let max = n + m
+
+    if max == 0 { return [] }
+
+    // v[k] stores the furthest x position reached for diagonal k
+    var v = [Int](repeating: 0, count: 2 * max + 2)
+    // trace stores v at each step for backtracking
+    var trace = [[Int]]()
+
+    for d in 0...max {
         if let dl = deadline, CFAbsoluteTimeGetCurrent() > dl {
-            break
+            // Timeout — return simple delete+insert
+            return [.delete(String(s1.map { Character($0) })),
+                    .insert(String(s2.map { Character($0) }))]
         }
 
-        // Forward path
-        var k1 = -d + k1start
-        while k1 <= d - k1end {
-            let k1Offset = maxD + k1
-            var x1: Int
-            if k1 == -d || (k1 != d && v1[k1Offset - 1] < v1[k1Offset + 1]) {
-                x1 = v1[k1Offset + 1]
-            } else {
-                x1 = v1[k1Offset - 1] + 1
-            }
-            var y1 = x1 - k1
-            while x1 < len1 && y1 < len2 && scalars1[x1] == scalars2[y1] {
-                x1 += 1
-                y1 += 1
-            }
-            v1[k1Offset] = x1
-            if x1 > len1 {
-                k1end += 2
-            } else if y1 > len2 {
-                k1start += 2
-            } else if front {
-                let k2Offset = maxD + delta - k1
-                if k2Offset >= 0 && k2Offset < vLen && v2[k2Offset] != -1 {
-                    let x2 = len1 - v2[k2Offset]
-                    if x1 >= x2 {
-                        return bisectSplit(text1, text2, x1, y1, deadline: deadline)
-                    }
-                }
-            }
-            k1 += 2
-        }
+        let snapshot = v
+        trace.append(snapshot)
 
-        // Reverse path
-        var k2 = -d + k2start
-        while k2 <= d - k2end {
-            let k2Offset = maxD + k2
-            var x2: Int
-            if k2 == -d || (k2 != d && v2[k2Offset - 1] < v2[k2Offset + 1]) {
-                x2 = v2[k2Offset + 1]
+        var k = -d
+        while k <= d {
+            let ki = k + max  // index into v array (offset by max)
+            var x: Int
+            if k == -d || (k != d && v[ki - 1] < v[ki + 1]) {
+                x = v[ki + 1]
             } else {
-                x2 = v2[k2Offset - 1] + 1
+                x = v[ki - 1] + 1
             }
-            var y2 = x2 - k2
-            while x2 < len1 && y2 < len2 && scalars1[len1 - x2 - 1] == scalars2[len2 - y2 - 1] {
-                x2 += 1
-                y2 += 1
+            var y = x - k
+            while x < n && y < m && s1[x] == s2[y] {
+                x += 1
+                y += 1
             }
-            v2[k2Offset] = x2
-            if x2 > len1 {
-                k2end += 2
-            } else if y2 > len2 {
-                k2start += 2
-            } else if !front {
-                let k1Offset = maxD + delta - k2
-                if k1Offset >= 0 && k1Offset < vLen && v1[k1Offset] != -1 {
-                    let x1 = v1[k1Offset]
-                    let y1 = x1 - (k1Offset - maxD)
-                    let x2Mirror = len1 - x2
-                    if x1 >= x2Mirror {
-                        return bisectSplit(text1, text2, x1, y1, deadline: deadline)
-                    }
-                }
+            v[ki] = x
+            if x >= n && y >= m {
+                // Found edit path
+                return backtrack(s1, s2, trace: trace, d: d, max: max)
             }
-            k2 += 2
+            k += 2
         }
     }
 
-    // Timeout: no common middle found
-    return [.delete(text1), .insert(text2)]
+    // Fallback (should not reach here for finite inputs)
+    return [.delete(String(s1.map { Character($0) })),
+            .insert(String(s2.map { Character($0) }))]
 }
 
-private func bisectSplit(_ text1: String, _ text2: String,
-                         _ x: Int, _ y: Int,
-                         deadline: CFAbsoluteTime?) -> [Diff] {
-    let len1 = text1.unicodeScalars.count
-    let len2 = text2.unicodeScalars.count
-    let text1a = text1[0..<x]
-    let text2a = text2[0..<y]
-    let text1b = text1[x..<len1]
-    let text2b = text2[y..<len2]
-    var diffs = computeDiff(text1a, text2a, deadline: deadline)
-    diffs += computeDiff(text1b, text2b, deadline: deadline)
-    return diffs
+private func backtrack(_ s1: [Unicode.Scalar], _ s2: [Unicode.Scalar],
+                       trace: [[Int]], d: Int, max: Int) -> [Diff] {
+    var x = s1.count
+    var y = s2.count
+    var result = [Diff]()
+
+    for step in stride(from: d, through: 0, by: -1) {
+        let v = trace[step]
+        let k = x - y
+        let ki = k + max
+
+        let prevK: Int
+        if k == -step || (k != step && v[ki - 1] < v[ki + 1]) {
+            prevK = k + 1
+        } else {
+            prevK = k - 1
+        }
+
+        let prevX = v[prevK + max]
+        let prevY = prevX - prevK
+
+        // Walk back along the diagonal (equal segments)
+        while x > prevX && y > prevY {
+            result.append(.equal(String(s1[x - 1])))
+            x -= 1
+            y -= 1
+        }
+
+        if step > 0 {
+            if x == prevX {
+                // Insert from s2
+                result.append(.insert(String(s2[y - 1])))
+                y -= 1
+            } else {
+                // Delete from s1
+                result.append(.delete(String(s1[x - 1])))
+                x -= 1
+            }
+        }
+    }
+
+    result.reverse()
+    mergeDiffs(&result)
+    return result
 }
 
-// MARK: - Cleanup merge
+// MARK: - Merge adjacent same-type segments
 
-/// Reorder and merge like-edit sections. Merge equalities.
-private func cleanupMerge(_ diffs: inout [Diff]) {
-    diffs.append(.equal(""))  // sentinel
-    var pointer = 0
-    var countDelete = 0
-    var countInsert = 0
-    var textDelete = ""
-    var textInsert = ""
-
-    while pointer < diffs.count {
-        switch diffs[pointer] {
-        case .insert(let text):
-            countInsert += 1
-            textInsert += text
-            pointer += 1
-        case .delete(let text):
-            countDelete += 1
-            textDelete += text
-            pointer += 1
-        case .equal(let text):
-            // Upon reaching an equality, check for prior redundancies.
-            if countDelete + countInsert > 1 {
-                if countDelete != 0 && countInsert != 0 {
-                    // Factor out common prefix
-                    let prefixLen = commonPrefixLength(textInsert, textDelete)
-                    if prefixLen != 0 {
-                        let offset = pointer - countDelete - countInsert - 1
-                        if offset >= 0, case .equal(let prev) = diffs[offset] {
-                            diffs[offset] = .equal(prev + textInsert[0..<prefixLen])
-                        } else {
-                            diffs.insert(.equal(textInsert[0..<prefixLen]), at: 0)
-                            pointer += 1
-                        }
-                        textInsert = textInsert[prefixLen...]
-                        textDelete = textDelete[prefixLen...]
-                    }
-                    // Factor out common suffix
-                    let suffixLen = commonSuffixLength(textInsert, textDelete)
-                    if suffixLen != 0 {
-                        let insLen = textInsert.unicodeScalars.count
-                        let delLen = textDelete.unicodeScalars.count
-                        if case .equal(let next) = diffs[pointer] {
-                            diffs[pointer] = .equal(textInsert[(insLen - suffixLen)..<insLen] + next)
-                        }
-                        textInsert = textInsert[0..<(insLen - suffixLen)]
-                        textDelete = textDelete[0..<(delLen - suffixLen)]
-                    }
-                }
-                // Delete the offending records and add the merged ones.
-                let start = pointer - countDelete - countInsert
-                diffs.removeSubrange(start..<pointer)
-                pointer = start
-                if !textDelete.isEmpty {
-                    diffs.insert(.delete(textDelete), at: pointer)
-                    pointer += 1
-                }
-                if !textInsert.isEmpty {
-                    diffs.insert(.insert(textInsert), at: pointer)
-                    pointer += 1
-                }
-            } else if pointer != 0, case .equal(let prev) = diffs[pointer - 1] {
-                // Merge this equality with the previous one.
-                diffs[pointer - 1] = .equal(prev + text)
-                diffs.remove(at: pointer)
-                pointer -= 1
-            }
-            countInsert = 0
-            countDelete = 0
-            textDelete = ""
-            textInsert = ""
-            pointer += 1
+func mergeDiffs(_ diffs: inout [Diff]) {
+    var i = 0
+    while i < diffs.count - 1 {
+        switch (diffs[i], diffs[i + 1]) {
+        case (.equal(let a), .equal(let b)) where !a.isEmpty && !b.isEmpty:
+            diffs[i] = .equal(a + b)
+            diffs.remove(at: i + 1)
+        case (.insert(let a), .insert(let b)) where !a.isEmpty && !b.isEmpty:
+            diffs[i] = .insert(a + b)
+            diffs.remove(at: i + 1)
+        case (.delete(let a), .delete(let b)) where !a.isEmpty && !b.isEmpty:
+            diffs[i] = .delete(a + b)
+            diffs.remove(at: i + 1)
+        default:
+            i += 1
         }
     }
-
-    if diffs.last?.text == "" {
-        diffs.removeLast()
-    }
-
-    // Second pass: look for single edits surrounded on both sides by equalities
-    // which can be shifted sideways to eliminate an equality.
-    var changes = false
-    pointer = 1
-    while pointer < diffs.count - 1 {
-        if case .equal = diffs[pointer - 1], case .equal = diffs[pointer + 1] {
-            let prev = diffs[pointer - 1].text
-            let curr = diffs[pointer].text
-            let next = diffs[pointer + 1].text
-
-            if curr.hasSuffix(prev) {
-                let currLen = curr.unicodeScalars.count
-                let prevLen = prev.unicodeScalars.count
-                let nextLen = next.unicodeScalars.count
-
-                let newCurr = prev + curr[0..<(currLen - prevLen)]
-                switch diffs[pointer] {
-                case .insert: diffs[pointer] = .insert(newCurr)
-                case .delete: diffs[pointer] = .delete(newCurr)
-                default: break
-                }
-                diffs[pointer + 1] = .equal(prev + next)
-                diffs.remove(at: pointer - 1)
-                changes = true
-            } else if curr.hasPrefix(next) {
-                let currLen = curr.unicodeScalars.count
-                let nextLen = next.unicodeScalars.count
-
-                diffs[pointer - 1] = .equal(prev + next)
-                let newCurr = curr[nextLen..<currLen] + next
-                switch diffs[pointer] {
-                case .insert: diffs[pointer] = .insert(newCurr)
-                case .delete: diffs[pointer] = .delete(newCurr)
-                default: break
-                }
-                diffs.remove(at: pointer + 1)
-                changes = true
-            }
-        }
-        pointer += 1
-    }
-
-    if changes {
-        cleanupMerge(&diffs)
-    }
+    // Remove empty segments
+    diffs = diffs.filter { !$0.text.isEmpty }
 }
