@@ -115,7 +115,7 @@ private struct MarkdownContentView: View {
             .padding(.top, 8)
             .padding(.bottom, 4)
 
-            SyntaxEditorView(text: $viewModel.source, accessibilityLabel: "Markdown editor")
+            SyntaxEditorView(text: $viewModel.source, accessibilityLabel: "Markdown editor", markdownHighlight: true)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             InlineErrorView(message: viewModel.errorMessage)
