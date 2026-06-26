@@ -22,6 +22,9 @@ struct FlintApp: App {
     // Declared before the @State block (NSApplicationDelegateAdaptor placement convention).
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
+    // DIST-03: open the onboarding WindowGroup by id when WindowCoordinator posts .openOnboarding.
+    @Environment(\.openWindow) private var openWindow
+
     @State private var historyStore = HistoryStore()
     @State private var prefs = PreferencesStore()
     @State private var clipboard = ClipboardDetector()
@@ -74,6 +77,13 @@ struct FlintApp: App {
                         )
                     }
                 }
+                // DIST-03: WindowCoordinator.openOnboarding() posts .openOnboarding after the
+                // activation-policy dance; open the onboarding WindowGroup here (mirrors the
+                // workspace open-by-id path). The MenuBarExtra content is created at launch, so
+                // this subscription is in place before the first-run gate fires.
+                .onReceive(NotificationCenter.default.publisher(for: .openOnboarding)) { _ in
+                    openWindow(id: "onboarding")
+                }
         }
         .menuBarExtraAccess(isPresented: $clipboard.isPopoverPresented)
         .menuBarExtraStyle(.window)
@@ -89,6 +99,19 @@ struct FlintApp: App {
                 .preferredColorScheme(prefs.theme.colorScheme)  // INFRA-14
         }
         .defaultSize(width: 900, height: 650)
+        .commandsRemoved()
+
+        // MARK: - Onboarding Window (DIST-03, D-07)
+        // First-run welcome window. Opened by id from the .openOnboarding receiver above, after
+        // WindowCoordinator's activation dance so it surfaces above the frontmost app. Fixed
+        // 480×360 and not resizable (.windowResizability(.contentSize)).
+        WindowGroup(id: "onboarding") {
+            OnboardingWindowView()
+                .environment(prefs)
+                .preferredColorScheme(prefs.theme.colorScheme)  // INFRA-14
+        }
+        .defaultSize(width: 480, height: 360)
+        .windowResizability(.contentSize)
         .commandsRemoved()
 
         // MARK: - Preferences Window (INFRA-12)

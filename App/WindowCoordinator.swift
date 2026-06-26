@@ -25,6 +25,19 @@ final class WindowCoordinator {
         }
     }
 
+    /// Open the first-run onboarding window (DIST-03, D-07).
+    /// Copies openWorkspace()'s activation-policy dance verbatim so the welcome window appears
+    /// ABOVE the frontmost app (the "where did it go?" problem for a no-Dock menubar app).
+    /// `.openOnboarding` is reserved in FlintServiceProvider's Notification.Name extension (plan 03-01).
+    func openOnboarding() {
+        windowCount += 1
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            NotificationCenter.default.post(name: .openOnboarding, object: nil)
+        }
+    }
+
     /// Call to open the Preferences window (INFRA-12).
     /// openSettings() is broken on macOS 14 with .accessory policy (Pitfall #2).
     /// Instead: setActivationPolicy(.regular) → activate → sendAction(showPreferences) → window appears in front.

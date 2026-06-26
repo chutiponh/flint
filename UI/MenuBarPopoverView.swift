@@ -174,6 +174,12 @@ struct MenuBarPopoverView: View {
             // Idempotent — guarded internally so repeated popover appearances are no-ops.
             sparkle.start()
             installEscMonitor()
+            // DIST-03: first-run onboarding gate. A single synchronous UserDefaults bool read —
+            // no async/database work, so the cold-start critical path is not regressed (Pitfall
+            // #6/#7). Runs only once: the onboarding window's dismiss sets hasSeenOnboarding=true.
+            if !prefs.hasSeenOnboarding {
+                WindowCoordinator.shared.openOnboarding()
+            }
         }
         .onDisappear {
             removeEscMonitor()
