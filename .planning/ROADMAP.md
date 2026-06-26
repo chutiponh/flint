@@ -83,7 +83,7 @@ Plans:
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
-- [ ] 02-05-PLAN.md — Number Base Converter (canonical bit pattern, two's-complement, interactive BitFieldView)
+- [x] 02-05-PLAN.md — Number Base Converter (canonical bit pattern, two's-complement, interactive BitFieldView)
 
 **Wave 6** *(blocked on Wave 5 completion)*
 
@@ -119,5 +119,5 @@ Phases execute in numeric order: 1 → 2 → 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Infrastructure + Core Tools | 10/10 | Complete   | 2026-06-26 |
-| 2. Extended Tools | 4/7 | In Progress|  |
+| 2. Extended Tools | 5/7 | In Progress|  |
 | 3. Polish & Distribution | 0/TBD | Not started | - |

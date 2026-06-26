@@ -106,9 +106,9 @@
 
 ### Extended Tools — Number Base (NUM)
 
-- [ ] **NUM-01**: User can type a value in binary, octal, decimal, or hex and see all bases update in real time
-- [ ] **NUM-02**: Bit-length selector (8/16/32/64) and signed/unsigned toggle with two's-complement display for negatives
-- [ ] **NUM-03**: A bit-field of toggleable bit buttons flips bits and updates all fields, handling overflow gracefully
+- [x] **NUM-01**: User can type a value in binary, octal, decimal, or hex and see all bases update in real time
+- [x] **NUM-02**: Bit-length selector (8/16/32/64) and signed/unsigned toggle with two's-complement display for negatives
+- [x] **NUM-03**: A bit-field of toggleable bit buttons flips bits and updates all fields, handling overflow gracefully
 
 ### Extended Tools — Text Diff (DIFF)
 
@@ -227,9 +227,9 @@
 | MD-02 | Phase 2 | Complete |
 | MD-03 | Phase 2 | Complete |
 | MD-04 | Phase 2 | Complete |
-| NUM-01 | Phase 2 | Pending |
-| NUM-02 | Phase 2 | Pending |
-| NUM-03 | Phase 2 | Pending |
+| NUM-01 | Phase 2 | Complete |
+| NUM-02 | Phase 2 | Complete |
+| NUM-03 | Phase 2 | Complete |
 | DIFF-01 | Phase 2 | Pending |
 | DIFF-02 | Phase 2 | Complete |
 | DIFF-03 | Phase 2 | Pending |
