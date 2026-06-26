@@ -120,7 +120,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 1/2)*
 
-- [ ] 03-02b-PLAN.md — Drag-and-drop text tools (DIST-02): apply shared .fileDrop + DropOverlayView to the 9 text-tool views (mechanical boilerplate), end-to-end drop verification *(depends on 03-02a)*
+- [x] 03-02b-PLAN.md — Drag-and-drop text tools (DIST-02): apply shared .fileDrop + DropOverlayView to the 9 text-tool views (mechanical boilerplate), end-to-end drop verification *(depends on 03-02a)*
 - [ ] 03-03-PLAN.md — Sparkle code wiring (DIST-04): Sparkle 2.9.3 SPM, SUPublicEDKey+SUFeedURL in Info.plist [BLOCKING: key from first build], lazy SparkleUpdaterService off cold-start path *(depends on 03-01, 03-02a — shares MenuBarPopoverView)*
 
 **Wave 4** *(blocked on Wave 1 + 3 — shares FlintApp/WindowCoordinator/Info.plist)*
