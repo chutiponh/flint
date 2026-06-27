@@ -28,7 +28,7 @@ final class WindowCoordinator {
     /// Open the first-run onboarding window (DIST-03, D-07).
     /// Copies openWorkspace()'s activation-policy dance verbatim so the welcome window appears
     /// ABOVE the frontmost app (the "where did it go?" problem for a no-Dock menubar app).
-    /// `.openOnboarding` is reserved in FlintServiceProvider's Notification.Name extension (plan 03-01).
+    /// `.openOnboarding` is declared in this file's Notification.Name extension below.
     func openOnboarding() {
         windowCount += 1
         NSApp.setActivationPolicy(.regular)
@@ -51,11 +51,10 @@ final class WindowCoordinator {
         }
     }
 
-    /// Open the menubar popover positioned on the matched tool after a Services invocation (DIST-01).
+    /// Open the menubar popover positioned on the matched tool (DIST-01, retained per user decision).
     /// Copies openWorkspace()'s activation-policy dance so the popover appears above the source app
-    /// (Pitfall #3). Navigation to `toolId` is performed by the FlintApp .onReceive handler, which
-    /// sets the seed and posts .routeServiceMatch; the popover is presented via the existing
-    /// MenuBarExtraAccess isPopoverPresented binding driven by .showPopover.
+    /// (Pitfall #3). The popover is presented via the existing MenuBarExtraAccess isPopoverPresented
+    /// binding driven by .showPopover.
     func openToolViaService(toolId: String) {
         windowCount += 1
         NSApp.setActivationPolicy(.regular)
@@ -65,9 +64,8 @@ final class WindowCoordinator {
         }
     }
 
-    /// Open the search-first launcher with the Services text staged in the search field (DIST-01, D-03).
-    /// Same activation-policy dance as openToolViaService; FlintApp's .onReceive stages the text via
-    /// .routeServiceNoMatch so the no-match case is never a dead end.
+    /// Open the search-first launcher with text staged in the search field (DIST-01, D-03, retained per user decision).
+    /// Same activation-policy dance as openToolViaService; the no-match case is never a dead end.
     func openLauncherWithStagedText(_ text: String) {
         windowCount += 1
         NSApp.setActivationPolicy(.regular)
@@ -87,4 +85,12 @@ final class WindowCoordinator {
             }
         }
     }
+}
+
+// MARK: - Notification Names (plan 03-03)
+// Relocated from FlintServiceProvider.swift (plan 260627-lef) — same raw string, same behavior.
+extension Notification.Name {
+    /// Posted by WindowCoordinator.openOnboarding() after the activation-policy dance.
+    /// FlintApp receives this and opens the onboarding WindowGroup by id (DIST-03).
+    static let openOnboarding = Notification.Name("com.lathe.openOnboarding")
 }

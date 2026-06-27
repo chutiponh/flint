@@ -7,7 +7,6 @@
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-	<!-- CFBundleName MUST match NSServices NSPortName ("Flint") -->
 	<key>CFBundleName</key>
 	<string>Flint</string>
 	<key>CFBundleDisplayName</key>
@@ -58,26 +57,5 @@
 	<key>SUFeedURL</key>
 	<string>http://localhost:8000/appcast.xml</string>
 
-	<!-- DIST-01: single smart "Open in Flint" Services entry (D-01).
-	     NSMessage MUST equal the @objc selector base name in FlintServiceProvider.
-	     NSPortName MUST equal CFBundleName. Read-only service: NSReturnTypes omitted. -->
-	<key>NSServices</key>
-	<array>
-		<dict>
-			<key>NSMenuItem</key>
-			<dict>
-				<key>default</key>
-				<string>Open in Flint</string>
-			</dict>
-			<key>NSMessage</key>
-			<string>openInFlint</string>
-			<key>NSPortName</key>
-			<string>Flint</string>
-			<key>NSSendTypes</key>
-			<array>
-				<string>public.plain-text</string>
-			</array>
-		</dict>
-	</array>
 </dict>
 </plist>
