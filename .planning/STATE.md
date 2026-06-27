@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 Phase: 03 — COMPLETE
 Plan: 6 of 6
 Status: Phase 03 complete
-Last activity: 2026-06-26 -- Phase 03 marked complete
+Last activity: 2026-06-27 - Completed quick task 260627-lef: Remove the Open in Flint macOS Services feature (DIST-01, plan 03-01)
 
 Progress: [██████████] 100%
 
@@ -118,6 +118,12 @@ None yet.
 
 - UUID v7 package choice unresolved (nthState/UUIDV7 vs leodabus/UUIDv7) — evaluate at Phase 1 sprint start; move UUID-02 to Phase 2 if vetting takes more than half a day
 - MenuBarExtraAccess vs NSStatusItem decision deferred — start with MenuBarExtra + MenuBarExtraAccess; escalate only if programmatic control needs exceed what it provides
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260627-lef | Remove the Open in Flint macOS Services feature (DIST-01, plan 03-01) | 2026-06-27 | 19fee45 | [260627-lef-remove-the-open-in-flint-macos-services-](./quick/260627-lef-remove-the-open-in-flint-macos-services-/) |
 
 ## Deferred Items
 
