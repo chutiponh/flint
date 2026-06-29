@@ -2,8 +2,11 @@
 // Global fuzzy search view — tools + history, keyboard navigable ↑↓ Enter (INFRA-10).
 // Uses SearchResultsMerger (UI-free) for merge/rank logic.
 // D-01: search-first launcher; D-02: typing replaces body with results.
+// D-07: arrow-key navigation with TextField-focused fallback via .searchNavigate notification
+//       (MenuBarPopoverView NSEvent monitor — Pitfall 7 / RESEARCH Open Question 1).
 
 import SwiftUI
+import AppKit
 
 struct SearchView: View {
     @Environment(HistoryStore.self) private var historyStore
@@ -43,6 +46,7 @@ struct SearchView: View {
         .onChange(of: query) { _, _ in
             selectedIndex = 0
         }
+        // Primary: SwiftUI .onKeyPress handlers — work when this view or a descendant holds focus.
         .onKeyPress(.upArrow) {
             if selectedIndex > 0 { selectedIndex -= 1 }
             return .handled
@@ -54,6 +58,18 @@ struct SearchView: View {
         .onKeyPress(.return) {
             activateSelected()
             return .handled
+        }
+        // D-07 fallback: observe .searchNavigate posted by the NSEvent arrow monitor in
+        // MenuBarPopoverView. This fires when the search TextField (a sibling view) holds AppKit
+        // first responder focus and SwiftUI's .onKeyPress above is unreliable (Pitfall 7).
+        // Direction: -1 = ↑ (move up, clamped at 0), +1 = ↓ (move down, clamped at count-1).
+        .onReceive(NotificationCenter.default.publisher(for: .searchNavigate)) { note in
+            guard let direction = note.userInfo?["direction"] as? Int else { return }
+            if direction < 0 {
+                if selectedIndex > 0 { selectedIndex -= 1 }
+            } else {
+                if selectedIndex < flatResults.count - 1 { selectedIndex += 1 }
+            }
         }
     }
 
@@ -106,7 +122,7 @@ struct SearchView: View {
                             onPin: { historyStore.togglePin(entry: entry) },
                             onDelete: { historyStore.delete(entry: entry) }
                         )
-                        .background(selectedIndex == flatIdx ? Color.accentColor.opacity(0.1) : .clear)
+                        .background(selectedIndex == flatIdx ? Color.accentColor.opacity(0.12) : .clear)
                         .cornerRadius(4)
                         .accessibilityAddTraits(selectedIndex == flatIdx ? .isSelected : [])
                     }
@@ -168,7 +184,7 @@ private struct SearchToolRow: View {
             Spacer()
         }
         .padding(.vertical, 4)
-        .background(isSelected ? Color.accentColor.opacity(0.1) : .clear)
+        .background(isSelected ? Color.accentColor.opacity(0.12) : .clear)
         .cornerRadius(4)
         .accessibilityLabel(tool.name)
     }
