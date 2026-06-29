@@ -32,6 +32,10 @@ extension Notification.Name {
     /// Broadcast by MenuBarPopoverView when the user presses ⌘⇧V (paste-and-detect).
     /// Triggers immediate clipboard detection and shows the DetectionBannerView (INFRA-16).
     static let pasteAndDetect = Notification.Name("lathe.pasteAndDetect")
+    /// Broadcast by MenuBarPopoverView when the user presses ⌘1–⌘9 (row copy D-08).
+    /// userInfo["index"]: Int — the 1-based row number to copy. Tool views observe this to copy
+    /// the output at that row index. Out-of-range indices are a silent no-op (CF-01, T-04-06).
+    static let selectOutputRow = Notification.Name("lathe.selectOutputRow")
 }
 
 /// Navigation state for the popover.
@@ -274,6 +278,23 @@ struct MenuBarPopoverView: View {
                 .keyboardShortcut("v", modifiers: [.command, .shift])
                 .accessibilityHidden(true)
                 .hidden()
+
+                // ⌘1–⌘9 — row copy (D-08, INFRA-16). Uses digit key characters, NOT the letter N.
+                // The existing ⌘N (letter) "Open workspace window" shortcut is unaffected (Pitfall 4).
+                // Out-of-range indices (e.g. ⌘7 on a 4-row tool) are a silent no-op in each
+                // tool's .selectOutputRow observer — never crashes (CF-01, T-04-06).
+                ForEach(1...9, id: \.self) { index in
+                    Button("Copy Output \(index)") {
+                        NotificationCenter.default.post(
+                            name: .selectOutputRow,
+                            object: nil,
+                            userInfo: ["index": index]
+                        )
+                    }
+                    .keyboardShortcut(KeyEquivalent(Character(String(index))), modifiers: .command)
+                    .accessibilityHidden(true)
+                    .hidden()
+                }
             }
         )
     }
