@@ -137,7 +137,7 @@ Plans:
 
 **Wave 7 — GAP CLOSURE** *(blocked on 03-06)*
 
-- [ ] 03-07-PLAN.md — GAP: route file drag-and-drop to the normal workspace window (Option 2) — MainWindowView becomes a launcher-routing drop target + discoverable popover affordance; unblocks UAT Tests 5/6/7/8 (DIST-02) *(depends on 03-06)*
+- [x] 03-07-PLAN.md — GAP: route file drag-and-drop to the normal workspace window (Option 2) — MainWindowView becomes a launcher-routing drop target + discoverable popover affordance; unblocks UAT Tests 5/6/7/8 (DIST-02) *(depends on 03-06)*
 
 **UI hint**: yes
 
@@ -150,4 +150,4 @@ Phases execute in numeric order: 1 → 2 → 3
 |-------|----------------|--------|-----------|
 | 1. Infrastructure + Core Tools | 10/10 | Complete   | 2026-06-26 |
 | 2. Extended Tools | 8/8 | Complete   | 2026-06-26 |
-| 3. Polish & Distribution | 7/8 | In Progress|  |
+| 3. Polish & Distribution | 8/8 | Complete   | 2026-06-29 |
