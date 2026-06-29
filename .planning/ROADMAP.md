@@ -16,6 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Infrastructure + Core Tools** - Full infra skeleton (ToolRegistry, HistoryStore, ClipboardDetector, HotkeyManager) plus JSON, Base64, URL, JWT, Timestamp, Hash, and UUID tools (completed 2026-06-25)
 - [x] **Phase 2: Extended Tools** - Regex, Color, Markdown, Number Base, and Text Diff tools with ChromaKit, HighlightSwift, and SwiftDiff added (completed 2026-06-26)
 - [x] **Phase 3: Polish & Distribution** - Services menu, drag-and-drop, signed/notarized DMG, Sparkle auto-update, and VoiceOver audit (completed 2026-06-26)
+- [ ] **Phase 4: UX Improvement** - Fix the failing update checker and the menu-landing navigation (browse all tools + back-to-picker), then a UX pass on visual polish, onboarding/discoverability, and interaction-flow speed across all 12 tools
 
 ## Phase Details
 
@@ -141,13 +142,57 @@ Plans:
 
 **UI hint**: yes
 
+### Phase 4: UX Improvement
+
+**Goal**: Flint feels effortless to navigate and trustworthy to keep — the menu landing lets a user see and reach every tool and return to the tool picker from inside any tool, the update checker works correctly, and the app's visual polish, onboarding, and common-task flows make the "paste → right transform in under a second" promise obvious from first launch
+**Mode:** mvp
+**Depends on**: Phase 3
+**Requirements**: UX-01, UX-02, UX-03, UX-04, UX-05, UX-06, UX-07, UX-08, INFRA-14, INFRA-15, INFRA-16, DIST-04
+**Scope** (what this phase addresses):
+
+  - **Defect — menu landing navigation**: the launcher has no way to browse all 12 tools, and there is no way to navigate back from inside a tool to the tool-selection screen. Add tool browsing/grid and a consistent back-to-picker affordance.
+  - **Defect — update checker**: the current "Check for Updates" behavior is failing; diagnose and fix the Sparkle wiring so an update check completes and reports correctly.
+  - **Visual / aesthetic polish**: spacing, typography, color, iconography, empty states, and Light/Dark consistency across the 12 tools and the launcher.
+  - **Onboarding & discoverability**: improve first-run flow and surface hidden capabilities (global hotkey, Services menu, drag-and-drop, clipboard auto-detect).
+  - **Interaction & flow speed**: reduce friction on common tasks — faster tool switching, keyboard navigation, and clipboard suggestion/copy-on-result behavior.
+
+**Success Criteria** (what must be TRUE):
+
+  1. From the menu landing, the user can see and open every one of the 12 tools without prior knowledge of which exist, and from inside any tool can return to the tool-selection screen in one obvious action
+  2. "Check for Updates" completes a real update check and reports its result correctly (up-to-date, update available, or a clear error) — the previously-failing behavior is fixed and verified
+  3. The 12 tools and launcher share a consistent, intentional visual treatment (spacing, type, color, empty/loading states) with no Light/Dark artifacts
+  4. A new user, on first launch, is shown how to find tools and is made aware of the hotkey, Services, drag-and-drop, and clipboard auto-detect features
+  5. Common transformations take fewer clicks/keystrokes than before — tool switching and result-copying are reachable from the keyboard, and the clipboard suggestion flow is discoverable
+
+**Plans**: 5 plans (4 waves)
+Plans:
+**Wave 1**
+
+- [ ] 04-01-PLAN.md — Menu-landing navigation: all-12-tools grid (D-01) + back-to-picker header (D-02)
+- [ ] 04-02-PLAN.md — Update checker fix: SPUUpdaterDelegate + Check-for-Updates button + status/error (D-03/D-04)
+
+**Wave 2** *(blocked on 04-01 — shares MenuBarPopoverView)*
+
+- [ ] 04-03-PLAN.md — Keyboard ⌘1–⌘9 row copy (D-08) + arrow-key search nav verify (D-07) — copy-only, no new permissions
+
+**Wave 3** *(blocked on 04-03 — shares the multi-output tool views)*
+
+- [ ] 04-04-PLAN.md — Visual consistency pass across 12 tools (D-05) + onboarding Steps 3/4 (D-06)
+
+**Wave 4** *(blocked on 04-02/04-03/04-04 — paste-back opt-in, non-autonomous)*
+
+- [ ] 04-05-PLAN.md — Paste-back (D-09): default-off Accessibility opt-in + CGEvent ⌘V; completes the keyboard loop
+
+**UI hint**: yes
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3
+Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Infrastructure + Core Tools | 10/10 | Complete   | 2026-06-26 |
 | 2. Extended Tools | 8/8 | Complete   | 2026-06-26 |
 | 3. Polish & Distribution | 8/8 | Complete   | 2026-06-29 |
+| 4. UX Improvement | 0/5 | Not started | — |
