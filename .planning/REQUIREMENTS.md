@@ -124,6 +124,17 @@
 - [x] **DIST-03**: App ships as a signed, notarized `.dmg` that passes Gatekeeper, with a first-run onboarding flow
 - [x] **DIST-04**: App auto-updates via Sparkle (EdDSA-signed updates)
 
+### UX Improvement (UX) — Phase 4 (derived during planning)
+
+- [ ] **UX-01**: From the menu landing the user can see and open every one of the 12 tools without prior knowledge of which exist (all-tools grid) — *D-01*
+- [ ] **UX-02**: From inside any tool the user can return to the tool-selection screen in one obvious action (back-to-picker header) — *D-02*
+- [ ] **UX-03**: "Check for Updates…" completes a real update check and reports its result correctly (up-to-date / update available / clear error) — *D-03*
+- [ ] **UX-04**: A default-off, opt-in paste-back action copies a result row AND pastes it into the previously-focused app; Accessibility permission is requested only on explicit enable (prompt-on-enable), the one sanctioned exception to the no-Accessibility-prompt guarantee — *D-09*
+- [ ] **UX-05**: Arrow keys (↑/↓) move a highlight through search results and Return opens the highlighted tool — *D-07*
+- [ ] **UX-06**: ⌘1…⌘9 copy the corresponding numbered output row of the active tool (copy-only, zero new permissions) — *D-08*
+- [ ] **UX-07**: First-run onboarding surfaces the hidden capabilities (global hotkey, Services menu, drag-and-drop, clipboard auto-detect) — *D-06*
+- [ ] **UX-08**: The 12 tools and launcher share a consistent visual treatment (spacing, type, color, empty/loading states) with no Light/Dark artifacts — *D-05*
+
 ## v2 Requirements
 
 ### Sync & Account
