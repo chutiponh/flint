@@ -168,8 +168,8 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 04-01-PLAN.md — Menu-landing navigation: all-12-tools grid (D-01) + back-to-picker header (D-02)
-- [ ] 04-02-PLAN.md — Update checker fix: SPUUpdaterDelegate + Check-for-Updates button + status/error (D-03/D-04)
+- [x] 04-01-PLAN.md — Menu-landing navigation: all-12-tools grid (D-01) + back-to-picker header (D-02)
+- [x] 04-02-PLAN.md — Update checker fix: SPUUpdaterDelegate + Check-for-Updates button + status/error (D-03/D-04)
 
 **Wave 2** *(blocked on 04-01 — shares MenuBarPopoverView)*
 
@@ -195,4 +195,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Infrastructure + Core Tools | 10/10 | Complete   | 2026-06-26 |
 | 2. Extended Tools | 8/8 | Complete   | 2026-06-26 |
 | 3. Polish & Distribution | 8/8 | Complete   | 2026-06-29 |
-| 4. UX Improvement | 0/5 | Not started | — |
+| 4. UX Improvement | 2/5 | In Progress|  |
