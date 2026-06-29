@@ -108,7 +108,7 @@ Plans:
   3. App ships as a signed, notarized DMG that mounts and installs without a Gatekeeper warning; a first-run onboarding flow greets new users
   4. App auto-updates via Sparkle with EdDSA-signed update bundles; the v0.0.1 to v0.0.2 pipeline is validated locally before the v1.0 release; the EdDSA public key is embedded in Info.plist from first release
 
-**Plans**: 6 plans (5 waves — 03-02 split into 03-02a/03-02b per checker; heavy shared-file overlap on FlintApp/WindowCoordinator/Info.plist)
+**Plans**: 8 plans (7 waves — 03-02 split into 03-02a/03-02b per checker; 03-06/03-07 added as gap closure for the drag-drop popover-dismiss blocker, UAT Tests 5-8)
 Plans:
 **Wave 1**
 
@@ -130,6 +130,14 @@ Plans:
 **Wave 5** *(blocked on Wave 1 + 3 + 4 — distribution capstone, non-autonomous)*
 
 - [x] 03-05-PLAN.md — Signed/notarized DMG + update dry-run (DIST-03/04): release.sh (Archive→Developer ID→notarytool→staple→create-dmg), dry-run-update.sh (v0.0.1→v0.0.2 appcast), DISTRIBUTION.md
+
+**Wave 6 — GAP CLOSURE** *(drag-drop blocker, UAT Tests 5-8; root cause: popover NSPanel dismisses on resign-key)*
+
+- [ ] 03-06-PLAN.md — GAP: launcher-routed seed-consume across the 6 detectable tools (JSON/Base64/URL/JWT/Timestamp/UUID) so detect()-routing actually pre-fills, not just Color (DIST-02)
+
+**Wave 7 — GAP CLOSURE** *(blocked on 03-06)*
+
+- [ ] 03-07-PLAN.md — GAP: route file drag-and-drop to the normal workspace window (Option 2) — MainWindowView becomes a launcher-routing drop target + discoverable popover affordance; unblocks UAT Tests 5/6/7/8 (DIST-02) *(depends on 03-06)*
 
 **UI hint**: yes
 
