@@ -133,7 +133,7 @@ Plans:
 
 **Wave 6 — GAP CLOSURE** *(drag-drop blocker, UAT Tests 5-8; root cause: popover NSPanel dismisses on resign-key)*
 
-- [ ] 03-06-PLAN.md — GAP: launcher-routed seed-consume across the 6 detectable tools (JSON/Base64/URL/JWT/Timestamp/UUID) so detect()-routing actually pre-fills, not just Color (DIST-02)
+- [x] 03-06-PLAN.md — GAP: launcher-routed seed-consume across the 6 detectable tools (JSON/Base64/URL/JWT/Timestamp/UUID) so detect()-routing actually pre-fills, not just Color (DIST-02)
 
 **Wave 7 — GAP CLOSURE** *(blocked on 03-06)*
 
@@ -150,4 +150,4 @@ Phases execute in numeric order: 1 → 2 → 3
 |-------|----------------|--------|-----------|
 | 1. Infrastructure + Core Tools | 10/10 | Complete   | 2026-06-26 |
 | 2. Extended Tools | 8/8 | Complete   | 2026-06-26 |
-| 3. Polish & Distribution | 6/6 | Complete   | 2026-06-26 |
+| 3. Polish & Distribution | 7/8 | In Progress|  |
