@@ -38,6 +38,13 @@ final class WindowCoordinator {
         }
     }
 
+    /// Record that a Settings window was opened by a view calling SwiftUI's `openSettings()`
+    /// directly (the supported path on macOS 14+). The view runs the activation dance itself;
+    /// this only keeps windowCount in sync so `.accessory` is restored on close.
+    func notePreferencesOpened() {
+        windowCount += 1
+    }
+
     /// Call to open the Preferences window (INFRA-12).
     /// openSettings() is broken on macOS 14 with .accessory policy (Pitfall #2).
     /// Instead: setActivationPolicy(.regular) → activate → sendAction(showPreferences) → window appears in front.
@@ -46,8 +53,13 @@ final class WindowCoordinator {
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            // showPreferencesWindow: is the action that SwiftUI's Settings scene responds to
-            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
+            // SwiftUI's Settings scene responds to showSettingsWindow: on macOS 13+;
+            // showPreferencesWindow: is the legacy (Big Sur) selector. Try modern first,
+            // fall back to legacy so it works across OS versions. sendAction returns false
+            // if no responder handled it.
+            if !NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil) {
+                NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
+            }
         }
     }
 

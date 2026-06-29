@@ -94,6 +94,7 @@ struct FlintApp: App {
                 .environment(prefs)
                 .environment(hotkeyManager)
                 .environment(historyStore)  // CR-01: needed by HistoryPreferencesTab.clearUnpinned()
+                .environment(sparkle)        // 04-02: PreferencesView's Updates section reads SparkleUpdaterService
                 .preferredColorScheme(prefs.theme.colorScheme)  // INFRA-14
         }
     }
