@@ -32,6 +32,15 @@ extension Notification.Name {
     /// Broadcast by MenuBarPopoverView when the user presses ⌘⇧V (paste-and-detect).
     /// Triggers immediate clipboard detection and shows the DetectionBannerView (INFRA-16).
     static let pasteAndDetect = Notification.Name("lathe.pasteAndDetect")
+    /// Broadcast by MenuBarPopoverView when the user presses ⌘1–⌘9 (row copy D-08).
+    /// userInfo["index"]: Int — the 1-based row number to copy. Tool views observe this to copy
+    /// the output at that row index. Out-of-range indices are a silent no-op (CF-01, T-04-06).
+    static let selectOutputRow = Notification.Name("lathe.selectOutputRow")
+    /// Broadcast by the D-07 arrow-key NSEvent monitor in MenuBarPopoverView when ↑/↓ is pressed
+    /// while the search TextField has focus and .onKeyPress is unreliable (Pitfall 7).
+    /// userInfo["direction"]: Int — (-1) for ↑ (keyCode 126), (+1) for ↓ (keyCode 125).
+    /// SearchView observes this to move selectedIndex; fires ONLY in the .searchResults state.
+    static let searchNavigate = Notification.Name("lathe.searchNavigate")
 }
 
 /// Navigation state for the popover.
@@ -69,6 +78,13 @@ struct MenuBarPopoverView: View {
     /// responder (text view / table) swallows Esc first (UAT Test 16). A local monitor sees the
     /// event before responder dispatch and covers every focus state with one mechanism.
     @State private var escMonitor: Any?
+    /// D-07 fallback: local keyDown monitor for ↑/↓ arrow keys (keyCodes 126/125) when the search
+    /// TextField holds focus and SwiftUI's `.onKeyPress(.upArrow/.downArrow)` in SearchView is
+    /// unreliable (Pitfall 7 / RESEARCH Open Question 1 — TextField may swallow arrow events before
+    /// they reach sibling views). The monitor fires only while in the .searchResults navigation state;
+    /// all other keys and all other states are passed through unchanged. Posting .searchNavigate
+    /// updates SearchView's selectedIndex without needing to move @State up to this view.
+    @State private var arrowMonitor: Any?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -174,6 +190,7 @@ struct MenuBarPopoverView: View {
             // Idempotent — guarded internally so repeated popover appearances are no-ops.
             sparkle.start()
             installEscMonitor()
+            installArrowMonitor()
             // DIST-03: first-run onboarding gate. A single synchronous UserDefaults bool read —
             // no async/database work, so the cold-start critical path is not regressed (Pitfall
             // #6/#7). Runs only once: the onboarding window's dismiss sets hasSeenOnboarding=true.
@@ -183,6 +200,7 @@ struct MenuBarPopoverView: View {
         }
         .onDisappear {
             removeEscMonitor()
+            removeArrowMonitor()
         }
         // Handle hotkey notification (show popover)
         .onReceive(NotificationCenter.default.publisher(for: .showPopover)) { _ in
@@ -274,6 +292,23 @@ struct MenuBarPopoverView: View {
                 .keyboardShortcut("v", modifiers: [.command, .shift])
                 .accessibilityHidden(true)
                 .hidden()
+
+                // ⌘1–⌘9 — row copy (D-08, INFRA-16). Uses digit key characters, NOT the letter N.
+                // The existing ⌘N (letter) "Open workspace window" shortcut is unaffected (Pitfall 4).
+                // Out-of-range indices (e.g. ⌘7 on a 4-row tool) are a silent no-op in each
+                // tool's .selectOutputRow observer — never crashes (CF-01, T-04-06).
+                ForEach(1...9, id: \.self) { index in
+                    Button("Copy Output \(index)") {
+                        NotificationCenter.default.post(
+                            name: .selectOutputRow,
+                            object: nil,
+                            userInfo: ["index": index]
+                        )
+                    }
+                    .keyboardShortcut(KeyEquivalent(Character(String(index))), modifiers: .command)
+                    .accessibilityHidden(true)
+                    .hidden()
+                }
             }
         )
     }
@@ -500,6 +535,58 @@ struct MenuBarPopoverView: View {
         if let monitor = escMonitor {
             NSEvent.removeMonitor(monitor)
             escMonitor = nil
+        }
+    }
+
+    // MARK: - D-07 Arrow Key Monitor (fallback for TextField-focused search nav)
+
+    /// Install a local keyDown monitor that intercepts ↑/↓ (keyCodes 126/125) ONLY when the
+    /// popover is in the .searchResults navigation state. In all other states or for all other
+    /// keys, events are returned untouched. Coexists with the Esc monitor: the Esc monitor handles
+    /// keyCode 53 and passes everything else through; this monitor intercepts only 125/126 in the
+    /// search-results state. There is no overlap. Idempotent.
+    ///
+    /// This is the D-07 fallback for Pitfall 7: SwiftUI `.onKeyPress(.upArrow/.downArrow)` on
+    /// SearchView may not fire when the search TextField (in MenuBarPopoverView.searchBar, a sibling
+    /// view) holds AppKit first responder focus and swallows arrow-key events before they propagate
+    /// to sibling SwiftUI views. The NSEvent local monitor runs before AppKit responder dispatch,
+    /// guaranteeing the arrows reach SearchView regardless of focus state.
+    private func installArrowMonitor() {
+        guard arrowMonitor == nil else { return }
+        // NOTE: MenuBarPopoverView is a SwiftUI struct. The closure captures `self` by value.
+        // @State variables in Swift are backed by heap storage; reading `navigationState` in this
+        // closure always returns the current live value (same underlying StateStorage box).
+        // This is the same mechanism used by the existing Esc monitor (installEscMonitor) which
+        // reads state indirectly via handleEscape(). Capturing without [weak self] is correct for
+        // struct types — there is no retain cycle because structs cannot be captured weakly.
+        arrowMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [self] event in
+            // Only intercept in search-results state (D-07 spec: "fires ONLY in .searchResults")
+            guard case .searchResults = navigationState else { return event }
+            switch event.keyCode {
+            case 125: // ↓ — move selection down
+                NotificationCenter.default.post(
+                    name: .searchNavigate,
+                    object: nil,
+                    userInfo: ["direction": 1]
+                )
+                return nil // consume the event (prevents system "ding" from NSTextField)
+            case 126: // ↑ — move selection up
+                NotificationCenter.default.post(
+                    name: .searchNavigate,
+                    object: nil,
+                    userInfo: ["direction": -1]
+                )
+                return nil // consume the event
+            default:
+                return event // pass all other keys through unchanged
+            }
+        }
+    }
+
+    private func removeArrowMonitor() {
+        if let monitor = arrowMonitor {
+            NSEvent.removeMonitor(monitor)
+            arrowMonitor = nil
         }
     }
 }
