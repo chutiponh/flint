@@ -436,4 +436,115 @@ struct ImageCompressTransformerTests {
             return false
         }(), "Expected .failure for corrupt PNG-extension input, got \(result)")
     }
+
+    // MARK: - Test A: PNG already-optimized must never grow beyond the original (GAP 1, PNG path)
+
+    @Test("Already-optimized PNG is never larger than the original; percentSaved >= 0 (GAP 1)")
+    func testCompress_alreadyOptimizedPNG_neverLargerThanOriginal() throws {
+        let dir = try makeTempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        // A tiny, low-color, already-optimal PNG: both the truecolor re-encode and the 256-color
+        // quantized output can exceed the original. The original itself must become the chosen output.
+        let source = dir.appendingPathComponent("logo.png")
+        try writeTinyPNG(to: source)
+        let origBytes = (try? source.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? Int.max
+
+        let result = ImageCompressTransformer.compress(url: source, quality: 0.6)
+
+        guard case .success(let compressed) = result else {
+            Issue.record("Expected .success but got \(result)")
+            return
+        }
+
+        // File exists.
+        #expect(FileManager.default.fileExists(atPath: compressed.destURL.path),
+                "Compressed file must exist on disk")
+
+        // NEVER larger than the original source bytes (the core GAP-1 guarantee).
+        #expect(compressed.compressedBytes <= origBytes,
+                "Output (\(compressed.compressedBytes)B) must not exceed original (\(origBytes)B)")
+
+        // Honest reporting: percentSaved is never negative.
+        #expect(compressed.percentSaved >= 0,
+                "percentSaved must never be negative, got \(compressed.percentSaved)%")
+
+        // Output remains a valid public.png with the SAME dimensions (D-02).
+        if let dstSource = CGImageSourceCreateWithURL(compressed.destURL as CFURL, nil),
+           let dstUTI = CGImageSourceGetType(dstSource) {
+            #expect((dstUTI as String) == "public.png", "Output must remain public.png, got \(dstUTI)")
+        } else {
+            Issue.record("Compressed output is not a readable image")
+        }
+        let srcDims = pixelDimensions(of: source)
+        let dstDims = pixelDimensions(of: compressed.destURL)
+        #expect(srcDims?.width == dstDims?.width && srcDims?.height == dstDims?.height,
+                "Dimensions must be preserved: \(String(describing: srcDims)) vs \(String(describing: dstDims))")
+    }
+
+    // MARK: - Test B: JPEG (non-PNG ImageIO path) must never grow beyond the original (GAP 1)
+
+    @Test("Re-encoded JPEG is never larger than the original; percentSaved >= 0, same UTI (GAP 1, D-02)")
+    func testCompress_jpeg_neverLargerThanOriginal() throws {
+        let dir = try makeTempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        // Re-saving a tiny JPEG via ImageIO commonly grows it — the non-PNG path must guard against that.
+        let source = dir.appendingPathComponent("photo.jpg")
+        try writeTinyJPEG(to: source)
+        let origBytes = (try? source.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? Int.max
+
+        let result = ImageCompressTransformer.compress(url: source, quality: 0.9)
+
+        guard case .success(let compressed) = result else {
+            Issue.record("Expected .success but got \(result)")
+            return
+        }
+
+        #expect(FileManager.default.fileExists(atPath: compressed.destURL.path))
+
+        // NEVER larger than the original source bytes (non-PNG path guard).
+        #expect(compressed.compressedBytes <= origBytes,
+                "Output (\(compressed.compressedBytes)B) must not exceed original (\(origBytes)B)")
+
+        // Honest reporting: percentSaved is never negative.
+        #expect(compressed.percentSaved >= 0,
+                "percentSaved must never be negative, got \(compressed.percentSaved)%")
+
+        // D-02: output UTI still equals the source UTI (public.jpeg).
+        if let srcSource = CGImageSourceCreateWithURL(source as CFURL, nil),
+           let dstSource = CGImageSourceCreateWithURL(compressed.destURL as CFURL, nil),
+           let srcUTI = CGImageSourceGetType(srcSource),
+           let dstUTI = CGImageSourceGetType(dstSource) {
+            #expect(srcUTI == dstUTI,
+                    "Source UTI '\(srcUTI)' must equal dest UTI '\(dstUTI)' (D-02)")
+        } else {
+            Issue.record("Could not read UTI from source or compressed file")
+        }
+    }
+
+    // MARK: - Test C: original copy-through is byte-identical when the original wins (GAP 1)
+
+    @Test("When the original is the smallest candidate, the output is byte-identical to the source (GAP 1)")
+    func testCompress_alreadyOptimizedPNG_copiesOriginalThroughByteIdentical() throws {
+        let dir = try makeTempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let source = dir.appendingPathComponent("logo.png")
+        try writeTinyPNG(to: source)
+
+        let result = ImageCompressTransformer.compress(url: source, quality: 0.6)
+
+        guard case .success(let compressed) = result else {
+            Issue.record("Expected .success but got \(result)")
+            return
+        }
+
+        // The produced file's bytes must equal the original file's bytes — proves copy-through,
+        // not a larger re-encode (Data read here is test-only; the transformer uses fileSizeKey).
+        let srcData = try Data(contentsOf: source)
+        let dstData = try Data(contentsOf: compressed.destURL)
+        #expect(dstData == srcData,
+                "Output bytes (\(dstData.count)B) must equal original bytes (\(srcData.count)B) when original wins")
+    }
 }
