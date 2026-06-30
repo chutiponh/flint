@@ -290,6 +290,103 @@ struct ImageCompressViewModelTests {
         #expect(store.tool == "image-compress")
     }
 
+    // MARK: - Test 6: compress() records lastSourceURLs + lastRunQuality (05-08, D-04)
+
+    @Test("compress() records lastSourceURLs and lastRunQuality on every run")
+    func testCompressRecordsLastRun() async throws {
+        let dir = try makeTempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let url1 = dir.appendingPathComponent("a.jpg")
+        let url2 = dir.appendingPathComponent("b.jpg")
+        try writeTinyJPEG(to: url1)
+        try writeTinyJPEG(to: url2)
+
+        let vm = await MainActor.run {
+            ImageCompressViewModel(onSaveHistory: { _ in })
+        }
+
+        await MainActor.run {
+            vm.compress(urls: [url1, url2], quality: 0.6)
+        }
+
+        // lastSourceURLs / lastRunQuality are set synchronously at the top of compress(),
+        // so they are observable immediately — no need to wait for the batch to finish.
+        let (urls, lastQuality) = await MainActor.run(body: { (vm.lastSourceURLs, vm.lastRunQuality) })
+        #expect(urls == [url1, url2])
+        #expect(lastQuality == 0.6)
+
+        // Let the batch settle so the temp dir teardown does not race the off-main work.
+        let deadline = Date().addingTimeInterval(10)
+        while await MainActor.run(body: { vm.isCompressing }) && Date() < deadline {
+            try await Task.sleep(nanoseconds: 50_000_000)
+        }
+    }
+
+    // MARK: - Test 7: recompress() replays the retained batch (05-08, GAP 2)
+
+    @Test("recompress() re-runs compression on the retained URLs and updates lastRunQuality")
+    func testRecompressReplaysBatch() async throws {
+        let dir = try makeTempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let url1 = dir.appendingPathComponent("r1.jpg")
+        let url2 = dir.appendingPathComponent("r2.jpg")
+        try writeTinyJPEG(to: url1)
+        try writeTinyJPEG(to: url2)
+
+        let vm = await MainActor.run {
+            ImageCompressViewModel(onSaveHistory: { _ in })
+        }
+
+        // Prior batch at 0.6
+        await MainActor.run {
+            vm.compress(urls: [url1, url2], quality: 0.6)
+        }
+        let firstDeadline = Date().addingTimeInterval(10)
+        while await MainActor.run(body: { vm.isCompressing }) && Date() < firstDeadline {
+            try await Task.sleep(nanoseconds: 50_000_000)
+        }
+
+        // Re-compress at a new quality
+        await MainActor.run {
+            vm.recompress(quality: 0.9)
+        }
+        let secondDeadline = Date().addingTimeInterval(10)
+        while await MainActor.run(body: { vm.isCompressing }) && Date() < secondDeadline {
+            try await Task.sleep(nanoseconds: 50_000_000)
+        }
+
+        let (rows, lastQuality) = await MainActor.run(body: { (vm.rows, vm.lastRunQuality) })
+        #expect(rows.count == 2, "recompress should rebuild the rows for the same URLs")
+        for row in rows {
+            if case .done = row.state { /* pass */ } else {
+                #expect(Bool(false), "Row should be .done after recompress, got \(row.state)")
+            }
+        }
+        #expect(lastQuality == 0.9, "recompress should update lastRunQuality to the new quality")
+    }
+
+    // MARK: - Test 8: recompress() is a no-op on a fresh VM (05-08, T-05-08B)
+
+    @Test("recompress() on a VM with no prior batch is a no-op — rows stay empty, no crash")
+    func testRecompressNoOpWhenEmpty() async throws {
+        let vm = await MainActor.run {
+            ImageCompressViewModel(onSaveHistory: { _ in })
+        }
+
+        await MainActor.run {
+            vm.recompress(quality: 0.9)
+        }
+
+        // Brief settle to confirm nothing spun up.
+        try await Task.sleep(nanoseconds: 100_000_000)
+
+        let (rows, isCompressing) = await MainActor.run(body: { (vm.rows, vm.isCompressing) })
+        #expect(rows.isEmpty, "recompress with no prior batch must not create rows")
+        #expect(isCompressing == false, "recompress with no prior batch must not start a batch")
+    }
+
     // MARK: - Test 5: Off-main proof — compress does not run on MainActor
 
     @Test("compress() launches an off-main Task (does not deadlock the main thread)")
