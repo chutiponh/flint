@@ -379,14 +379,27 @@ struct PNGQuantizationTests {
         let dir = try makeTempDir()
         defer { try? FileManager.default.removeItem(at: dir) }
 
-        let width = 64, height = 64
+        // Photographic-style image: a smooth gradient base PLUS per-pixel noise.
+        // This is the UAT Test 8 scenario — high local variation defeats PNG row filters,
+        // so a truecolor re-encode stays large while a 256-color palette compresses well.
+        // (A perfectly smooth gradient is the degenerate case where truecolor's Paeth/Sub
+        // filters can beat indexed; that is not the photographic case this engine targets.)
+        let width = 128, height = 128
         var rgba = [UInt8](repeating: 0, count: width * height * 4)
+        var seed: UInt64 = 0x12345
+        func noise() -> Int {
+            seed = seed &* 6364136223846793005 &+ 1442695040888963407
+            return Int((seed >> 33) & 0xFF)
+        }
         for y in 0..<height {
             for x in 0..<width {
                 let off = (y * width + x) * 4
-                rgba[off] = UInt8((x * 255) / (width - 1))
-                rgba[off + 1] = UInt8((y * 255) / (height - 1))
-                rgba[off + 2] = UInt8(((x * y) % 256))
+                let baseR = (x * 255) / (width - 1)
+                let baseG = (y * 255) / (height - 1)
+                let baseB = ((x + y) * 255) / (width + height - 2)
+                rgba[off] = UInt8(max(0, min(255, baseR + noise() / 8 - 16)))
+                rgba[off + 1] = UInt8(max(0, min(255, baseG + noise() / 8 - 16)))
+                rgba[off + 2] = UInt8(max(0, min(255, baseB + noise() / 8 - 16)))
                 rgba[off + 3] = 255
             }
         }
