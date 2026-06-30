@@ -63,6 +63,10 @@ private struct GeneralPreferencesTab: View {
     @State private var accessibilityPollTimer: Timer?
     // showDenialMessage: true when polling completes with no permission granted.
     @State private var showDenialMessage: Bool = false
+    // isWaitingForPermission: true while the 30s poll is active, so the user gets
+    // immediate feedback instead of a blank wait (also covers ad-hoc builds where
+    // the system prompt may never appear).
+    @State private var isWaitingForPermission: Bool = false
 
     var body: some View {
         @Bindable var prefs = prefs
@@ -173,6 +177,7 @@ private struct GeneralPreferencesTab: View {
                             } else {
                                 prefs.pasteBackEnabled = false
                                 showDenialMessage = false
+                                isWaitingForPermission = false
                                 accessibilityPollTimer?.invalidate()
                                 accessibilityPollTimer = nil
                             }
@@ -187,6 +192,19 @@ private struct GeneralPreferencesTab: View {
                     Text("Accessibility permission granted. ⌘1–⌘9 will copy and paste the result into the previously-focused app.")
                         .font(.system(size: 13))
                         .foregroundStyle(.secondary)
+                }
+
+                // Waiting state: shown immediately while the poll is active so the
+                // user isn't left staring at a silent 30-second void (also the
+                // ad-hoc-build case where the system prompt never surfaces).
+                if isWaitingForPermission {
+                    HStack(spacing: 6) {
+                        ProgressView().controlSize(.small)
+                        Text("Waiting for Accessibility permission… grant it in System Settings if no prompt appears.")
+                            .font(.system(size: 13))
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
 
                 // Denial state: shown after polling timeout with no permission granted.
@@ -227,6 +245,7 @@ private struct GeneralPreferencesTab: View {
     /// It is reached exclusively via explicit user opt-in. Never called at launch or hotkey use.
     private func handlePasteBackToggleOn() {
         showDenialMessage = false
+        isWaitingForPermission = false
 
         if AXIsProcessTrusted() {
             // Permission already granted — arm immediately.
@@ -241,6 +260,10 @@ private struct GeneralPreferencesTab: View {
         let options: NSDictionary = ["AXTrustedCheckOptionPrompt": true]
         AXIsProcessTrustedWithOptions(options)
 
+        // Immediate feedback: the prompt may be delayed or (on ad-hoc builds) never
+        // surface, so show a waiting indicator the moment we start polling.
+        isWaitingForPermission = true
+
         // Poll every 0.5s for up to 30s (60 polls) — macOS has no TCC change callback.
         var pollCount = 0
         accessibilityPollTimer?.invalidate()
@@ -253,6 +276,7 @@ private struct GeneralPreferencesTab: View {
                 DispatchQueue.main.async {
                     prefs.pasteBackEnabled = true
                     showDenialMessage = false
+                    isWaitingForPermission = false
                 }
             } else if pollCount >= 60 {
                 // 30 seconds elapsed without grant — revert toggle + show denial message.
@@ -261,6 +285,7 @@ private struct GeneralPreferencesTab: View {
                 DispatchQueue.main.async {
                     prefs.pasteBackEnabled = false
                     showDenialMessage = true
+                    isWaitingForPermission = false
                 }
             }
         }
