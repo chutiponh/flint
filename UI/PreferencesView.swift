@@ -101,6 +101,13 @@ private struct GeneralPreferencesTab: View {
                     KeyboardShortcuts.Recorder("", name: .openFlint)
                         .accessibilityLabel("Record new hotkey for opening Flint")
                         .help("Click to record a new global hotkey. Default: ⌘⇧Space.")
+                    // ⌘⇧Space (the default) is a macOS-reserved combo the recorder won't accept,
+                    // so a Reset button restores it via the supported reset() API instead.
+                    Button("Reset") {
+                        KeyboardShortcuts.reset(.openFlint)
+                    }
+                    .accessibilityLabel("Reset hotkey to the default ⌘⇧Space")
+                    .help("Restore the default hotkey (⌘⇧Space).")
                 }
             }
 
