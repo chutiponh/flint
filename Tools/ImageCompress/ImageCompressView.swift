@@ -126,13 +126,20 @@ struct ImageCompressView: View {
     @ViewBuilder
     private func presetButton(label: String, value: Double) -> some View {
         let isActive = Int(quality) == Int(value)
-        Button(label) {
+        let button = Button(label) {
             quality = value
         }
-        .buttonStyle(isActive ? .borderedProminent : .bordered)
-        .accessibilityLabel("\(label) quality preset")
-        .accessibilityHint("Sets quality to \(Int(value)) percent")
-        .accessibilityAddTraits(isActive ? .isSelected : [])
+        if isActive {
+            button.buttonStyle(.borderedProminent)
+                .accessibilityLabel("\(label) quality preset")
+                .accessibilityHint("Sets quality to \(Int(value)) percent")
+                .accessibilityAddTraits(.isSelected)
+        } else {
+            button.buttonStyle(.bordered)
+                .accessibilityLabel("\(label) quality preset")
+                .accessibilityHint("Sets quality to \(Int(value)) percent")
+                .accessibilityAddTraits([])
+        }
     }
 
     // MARK: - Results Section (D-09)
@@ -172,7 +179,7 @@ struct ImageCompressView: View {
                     }
                 }
                 .padding(10)
-                .background(Color.quaternary.opacity(0.3))
+                .background(.quaternary.opacity(0.3))
                 .cornerRadius(8)
             }
         }
@@ -221,7 +228,7 @@ struct ImageCompressView: View {
         } else {
             // Placeholder while loading or if unreadable
             RoundedRectangle(cornerRadius: 4)
-                .fill(Color.quaternary)
+                .fill(.quaternary)
                 .frame(width: 40, height: 40)
         }
     }
