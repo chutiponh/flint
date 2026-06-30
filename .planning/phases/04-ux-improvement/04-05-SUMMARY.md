@@ -3,7 +3,7 @@ phase: 04-ux-improvement
 plan: 05
 subsystem: paste-back
 tags: [keyboard-flow, accessibility, cgevent, D-09]
-status: paused-at-checkpoint
+status: complete
 dependency_graph:
   requires: [04-02, 04-03, 04-04]
   provides: [paste-back-service, pasteBackEnabled-pref, previousFrontmostApp-capture]
