@@ -16,6 +16,10 @@ struct AllToolsGridView: View {
     /// Optional search query. Empty = show all tools; non-empty = filter the grid in-place.
     var filter: String = ""
 
+    /// Index of the keyboard-highlighted tile (for ↑/↓ navigation while filtering). nil = none.
+    /// Indexes into the same `tools` list the grid renders.
+    var selectedIndex: Int? = nil
+
     /// Callback invoked with the selected tool's id. Caller sets `navigationState = .tool(toolId:)`.
     let onSelect: (String) -> Void
 
@@ -44,8 +48,12 @@ struct AllToolsGridView: View {
                 .padding(.vertical, 24)
             } else {
                 LazyVGrid(columns: columns, spacing: 8) {
-                    ForEach(tools) { tool in
-                        ToolGridTile(tool: tool, onSelect: onSelect)
+                    ForEach(Array(tools.enumerated()), id: \.element.id) { idx, tool in
+                        ToolGridTile(
+                            tool: tool,
+                            isSelected: idx == selectedIndex,
+                            onSelect: onSelect
+                        )
                     }
                 }
             }
@@ -61,6 +69,7 @@ struct AllToolsGridView: View {
 /// Fixed height so tiles with one-line and two-line labels render at identical size.
 private struct ToolGridTile: View {
     let tool: ToolDefinition
+    var isSelected: Bool = false
     let onSelect: (String) -> Void
 
     @State private var isHovered: Bool = false
@@ -83,13 +92,21 @@ private struct ToolGridTile: View {
             .frame(height: 72) // equal-size tiles regardless of label length
             .padding(.horizontal, 4)
             .background(
-                Color(NSColor.quaternaryLabelColor).opacity(isHovered ? 1.0 : 0.6)
+                // Selected: accent tint. Hover: brighter quaternary. Otherwise: quaternary.
+                isSelected
+                    ? Color.accentColor.opacity(0.20)
+                    : Color(NSColor.quaternaryLabelColor).opacity(isHovered ? 1.0 : 0.6)
             )
             .cornerRadius(8)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .strokeBorder(Color.accentColor, lineWidth: isSelected ? 2 : 0)
+            )
         }
         .buttonStyle(.plain)
         .accessibilityLabel(tool.name)
         .accessibilityHint("Open \(tool.name)")
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
         .onHover { hovered in
             withAnimation(.easeInOut(duration: 0.1)) {
                 isHovered = hovered

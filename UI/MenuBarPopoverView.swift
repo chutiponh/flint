@@ -64,6 +64,9 @@ struct MenuBarPopoverView: View {
 
     @State private var searchText: String = ""
     @State private var navigationState: PopoverNavigationState = .root
+    /// Index of the keyboard-selected tile in the filtered grid (↑/↓ navigation). Resets to 0
+    /// whenever the query changes. Used only in the .searchResults state.
+    @State private var selectedToolIndex: Int = 0
     @State private var dismissedDetection: Bool = false
     @FocusState private var searchFocused: Bool
     // DIST-02 (D-04 / D-06): launcher file drop. A dropped text file is decoded off-main, run
@@ -158,11 +161,15 @@ struct MenuBarPopoverView: View {
                     .transition(.opacity.animation(.easeOut(duration: 0.15)))
             }
         }
-        .onChange(of: clipboard.detectionResult) { _, _ in
+        .onChange(of: clipboard.detectionResult) { _, newResult in
             // D-05: re-show banner on any new detection (reset dismissal)
             dismissedDetection = false
+            // Auto-open the detected tool (pre-filled) when we're sitting on the launcher with
+            // an empty search — copying #FF5733 + ⌘⇧Space lands you straight in Color Converter.
+            autoOpenDetectedTool(newResult)
         }
         .onChange(of: searchText) { _, newValue in
+            selectedToolIndex = 0 // reset highlight whenever the filter changes
             if newValue.isEmpty {
                 if case .searchResults = navigationState {
                     navigationState = .root
@@ -301,6 +308,33 @@ struct MenuBarPopoverView: View {
         )
     }
 
+    // MARK: - Detection Auto-Open
+
+    /// Auto-open the detected tool (pre-filled with the clipboard value) when the user is on the
+    /// launcher with an empty search. This is the "copy something + ⌘⇧Space → land in the right
+    /// tool" flow. Guarded so it never yanks the user out of a tool they're already using or out
+    /// of an active search.
+    private func autoOpenDetectedTool(_ result: DetectionResult?) {
+        guard let result else { return }
+        guard case .root = navigationState, searchText.isEmpty, !dismissedDetection else { return }
+        dismissedDetection = true // consume this detection so it doesn't re-trigger
+        if let clip = NSPasteboard.general.string(forType: .string) {
+            toolSeed.set(toolId: result.toolId, value: clip)
+        }
+        navigationState = .tool(toolId: result.toolId)
+    }
+
+    /// Open a tool chosen from the launcher search (type-to-filter → Enter, or click a filtered
+    /// tile), pre-filled with the current clipboard value so it's ready to use immediately.
+    /// Seeding an empty clipboard is a harmless no-op (the tool just opens blank).
+    private func openToolFromLauncher(_ toolId: String) {
+        if let clip = NSPasteboard.general.string(forType: .string), !clip.isEmpty {
+            toolSeed.set(toolId: toolId, value: clip)
+        }
+        navigationState = .tool(toolId: toolId)
+        searchText = ""
+    }
+
     // MARK: - Keyboard Action Helpers (INFRA-16)
 
     /// Open the Settings window. The app runs as `.accessory` (no Dock icon), so a settings
@@ -370,12 +404,14 @@ struct MenuBarPopoverView: View {
                 .focused($searchFocused)
                 .accessibilityLabel("Search tools or history")
                 .onSubmit {
-                    // Enter selects first search result
+                    // Enter opens the SELECTED filtered tool (↑/↓ moves the selection; defaults to
+                    // the first match), pre-filled with the clipboard value:
+                    // copy → ⌘⇧Space → type → (↑/↓) → Enter → tool is ready to use.
                     if case .searchResults(let q) = navigationState {
                         let results = toolRegistry.search(q)
-                        if let first = results.first {
-                            navigationState = .tool(toolId: first.id)
-                            searchText = ""
+                        let idx = min(max(selectedToolIndex, 0), results.count - 1)
+                        if results.indices.contains(idx) {
+                            openToolFromLauncher(results[idx].id)
                         }
                     }
                 }
@@ -440,9 +476,10 @@ struct MenuBarPopoverView: View {
             // (no stretching the grid/history to fill the popover).
             let historyMatches = historyStore.search(query)
             VStack(spacing: 0) {
-                AllToolsGridView(filter: query, onSelect: { toolId in
-                    navigationState = .tool(toolId: toolId)
-                    searchText = ""
+                AllToolsGridView(filter: query, selectedIndex: selectedToolIndex, onSelect: { toolId in
+                    // Clicking a filtered tile mirrors the Enter path: open pre-filled with the
+                    // clipboard value, ready to use.
+                    openToolFromLauncher(toolId)
                 })
                 if !historyMatches.isEmpty {
                     Divider()
@@ -592,25 +629,21 @@ struct MenuBarPopoverView: View {
         // reads state indirectly via handleEscape(). Capturing without [weak self] is correct for
         // struct types — there is no retain cycle because structs cannot be captured weakly.
         arrowMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [self] event in
-            // Only intercept in search-results state (D-07 spec: "fires ONLY in .searchResults")
-            guard case .searchResults = navigationState else { return event }
+            // Only intercept ↑/↓ while filtering — move the grid's tile selection. The search
+            // TextField holds focus, so this NSEvent monitor (runs before responder dispatch) is
+            // how the arrows reach our selection state at all (Pitfall 7).
+            guard case .searchResults(let query) = navigationState else { return event }
+            let count = toolRegistry.search(query).count
+            guard count > 0 else { return event }
             switch event.keyCode {
-            case 125: // ↓ — move selection down
-                NotificationCenter.default.post(
-                    name: .searchNavigate,
-                    object: nil,
-                    userInfo: ["direction": 1]
-                )
-                return nil // consume the event (prevents system "ding" from NSTextField)
-            case 126: // ↑ — move selection up
-                NotificationCenter.default.post(
-                    name: .searchNavigate,
-                    object: nil,
-                    userInfo: ["direction": -1]
-                )
-                return nil // consume the event
+            case 125: // ↓ — next tile
+                selectedToolIndex = min(selectedToolIndex + 1, count - 1)
+                return nil // consume (prevents the NSTextField "ding")
+            case 126: // ↑ — previous tile
+                selectedToolIndex = max(selectedToolIndex - 1, 0)
+                return nil
             default:
-                return event // pass all other keys through unchanged
+                return event
             }
         }
     }
