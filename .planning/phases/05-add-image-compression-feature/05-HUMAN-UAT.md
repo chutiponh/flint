@@ -3,12 +3,12 @@ status: partial
 phase: 05-add-image-compression-feature
 source: [05-VERIFICATION.md]
 started: 2026-06-30T08:37:15Z
-updated: 2026-06-30T08:37:15Z
+updated: 2026-06-30T09:05:00Z
 ---
 
 ## Current Test
 
-[awaiting human testing]
+[testing paused — PNG compression-ratio gap found, routing to fix]
 
 ## Tests
 
@@ -38,15 +38,40 @@ result: [pending]
 
 ### 7. Launcher search routing
 expected: Searching the launcher finds and routes to the Image Compressor tool.
-result: [pending]
+result: pass
+note: "Initially appeared missing — root cause was a stale binary launched from one of 10 DerivedData folders, not a code defect. After clean build + relaunch from canonical BUILD_DIR, tool appears in grid and search ('image'/'compress')."
+
+### 8. PNG compression ratio
+expected: Compressing a photographic PNG achieves savings comparable to dedicated PNG optimizers (~70-85%).
+result: issue
+reported: "doesn't compress much — online tool went 7MB to 1MB without losing quality"
+severity: major
 
 ## Summary
 
-total: 7
-passed: 0
-issues: 0
-pending: 7
+total: 8
+passed: 1
+issues: 1
+pending: 6
 skipped: 0
 blocked: 0
 
 ## Gaps
+
+- truth: "Compressing a photographic PNG achieves savings comparable to dedicated PNG optimizers (~70-85%)"
+  status: failed
+  reason: "User reported: online tool compressed a 7.27MB PNG to 1.35MB with no visible quality loss; Flint barely shrinks it"
+  severity: major
+  test: 8
+  root_cause: "ImageCompressTransformer gives PNG/TIFF nil destination properties (lines 76-78), so PNGs are losslessly re-encoded as truecolor RGBA — no size reduction. Verified: online tool's output is identical 2752x1536 dimensions but converted from 8-bit RGBA truecolor to 8-bit colormap (256-color palette), i.e. PNG color quantization (pngquant/libimagequant-style). Apple's ImageIO/CGImageDestination has NO palette-quantization API; plain re-encode of the source = 6.9MB (still RGBA)."
+  artifacts:
+    - path: "Tools/ImageCompress/ImageCompressTransformer.swift"
+      issue: "PNG path uses nil props (no quantization) — line 76-78"
+  missing:
+    - "Native pure-Swift color quantizer (median-cut/octree) producing an indexed-color palette"
+    - "Indexed (colormap) PNG writer — CGImageDestination cannot emit indexed PNG, needs custom writer"
+    - "Quantization on by default for PNGs (user decision); preserve alpha"
+  decisions:
+    - "Engine: pure-Swift native quantizer, NO C dependency (libimagequant/pngquant is GPL/LGPL — blocks App Store v2 sandbox per CLAUDE.md)"
+    - "Default: PNG quantization ON by default"
+  debug_session: ""
