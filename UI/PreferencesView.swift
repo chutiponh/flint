@@ -58,15 +58,19 @@ private struct GeneralPreferencesTab: View {
     @Environment(PreferencesStore.self) private var prefs
     @Environment(SparkleUpdaterService.self) private var sparkle
 
-    // D-09: Accessibility permission polling state
-    // Timer fires every 0.5s for up to 30s (60 polls) after the user enables the paste-back toggle.
-    @State private var accessibilityPollTimer: Timer?
-    // showDenialMessage: true when polling completes with no permission granted.
-    @State private var showDenialMessage: Bool = false
-    // isWaitingForPermission: true while the 30s poll is active, so the user gets
-    // immediate feedback instead of a blank wait (also covers ad-hoc builds where
-    // the system prompt may never appear).
-    @State private var isWaitingForPermission: Bool = false
+    // D-09: Accessibility permission state, two-phase UI.
+    // Re-checked on view appear and on window focus (no polling) — macOS caches the
+    // trust verdict per process, so a focus-driven re-read after the user returns
+    // from System Settings is the reliable signal, not a timer.
+    @State private var hasAccessibility: Bool = AXIsProcessTrusted()
+
+    // pasteBackEnabled via @AppStorage, NOT prefs.pasteBackEnabled. The store's
+    // property is a computed UserDefaults wrapper that @Observable doesn't instrument,
+    // so binding to it dropped writes (toggle didn't persist). @AppStorage is the
+    // UserDefaults-backed value SwiftUI observes correctly. Same key, so the gate
+    // logic in ColorView/HashView/NumberBaseView (which read prefs.pasteBackEnabled)
+    // stays consistent.
+    @AppStorage("lathe.pasteBackEnabled") private var pasteBackEnabled: Bool = false
 
     var body: some View {
         @Bindable var prefs = prefs
@@ -162,67 +166,35 @@ private struct GeneralPreferencesTab: View {
                         .lineLimit(3)
                 }
             }
-            // MARK: Keyboard Flow (D-09)
+            // MARK: Keyboard Flow (D-09) — two-phase: grant first, then toggle.
             Section("Keyboard Flow") {
-                // Toggle uses a custom Binding setter so we can intercept the enable path
-                // and request Accessibility permission on-demand (prompt-on-enable, T-04-11).
-                // With toggle OFF (default), AXIsProcessTrustedWithOptions is NEVER called.
-                Toggle(
-                    "Auto-paste result after copying",
-                    isOn: Binding(
-                        get: { prefs.pasteBackEnabled },
-                        set: { newValue in
-                            if newValue {
-                                handlePasteBackToggleOn()
-                            } else {
-                                prefs.pasteBackEnabled = false
-                                showDenialMessage = false
-                                isWaitingForPermission = false
-                                accessibilityPollTimer?.invalidate()
-                                accessibilityPollTimer = nil
-                            }
-                        }
-                    )
-                )
-                .accessibilityLabel("Enable automatic paste-back after copying a result")
-                .help("When enabled, pressing ⌘1–⌘9 copies the result AND pastes it into the previously-focused app. Requires Accessibility permission.")
-
-                // Confirmed state: shown when toggle is ON and permission is verified.
-                if prefs.pasteBackEnabled {
-                    Text("Accessibility permission granted. ⌘1–⌘9 will copy and paste the result into the previously-focused app.")
-                        .font(.system(size: 13))
-                        .foregroundStyle(.secondary)
-                }
-
-                // Waiting state: shown immediately while the poll is active so the
-                // user isn't left staring at a silent 30-second void (also the
-                // ad-hoc-build case where the system prompt never surfaces).
-                if isWaitingForPermission {
-                    HStack(spacing: 6) {
-                        ProgressView().controlSize(.small)
-                        Text("Waiting for Accessibility permission… grant it in System Settings if no prompt appears.")
+                if hasAccessibility {
+                    // Permission granted → show the enable/disable toggle.
+                    Toggle("Auto-paste result after copying", isOn: $pasteBackEnabled)
+                        .accessibilityLabel("Enable automatic paste-back after copying a result")
+                        .help("When enabled, pressing ⌘1–⌘9 copies the result AND pastes it into the previously-focused app.")
+                    if pasteBackEnabled {
+                        Text("⌘1–⌘9 will copy a result and paste it into the previously-focused app.")
+                            .font(.system(size: 13))
+                            .foregroundStyle(.secondary)
+                    }
+                } else {
+                    // Permission not granted → button to grant it (no toggle, no poll).
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Auto-paste result after copying")
+                        Text("Paste-back needs Accessibility permission so Flint can paste into the previously-focused app. Grant it, then return to this window.")
                             .font(.system(size: 13))
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-
-                // Denial state: shown after polling timeout with no permission granted.
-                if showDenialMessage {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Accessibility permission was denied. To enable paste-back, go to System Settings > Privacy & Security > Accessibility and add Flint.")
-                            .font(.system(size: 13))
-                            .foregroundStyle(.orange)
-                            .fixedSize(horizontal: false, vertical: true)
-
-                        Button("Open System Settings") {
-                            // Deep link to Accessibility pane (Pitfall 3: provide escape hatch).
+                        Button("Grant Accessibility Permission…") {
+                            // Trigger the system prompt (T-04-11: only call site, explicit opt-in),
+                            // then deep-link to the pane in case the prompt is suppressed.
+                            _ = AXIsProcessTrustedWithOptions(["AXTrustedCheckOptionPrompt": true] as NSDictionary)
                             if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
                                 NSWorkspace.shared.open(url)
                             }
                         }
-                        .buttonStyle(.link)
-                        .accessibilityLabel("Open System Settings Privacy and Security Accessibility")
+                        .accessibilityLabel("Grant Accessibility permission for paste-back")
                     }
                 }
             }
@@ -230,64 +202,12 @@ private struct GeneralPreferencesTab: View {
         .formStyle(.grouped)
         .padding()
         .frame(minWidth: 420)
-    }
-
-    // MARK: - D-09 Permission Flow
-
-    /// Called when the user flips the paste-back toggle ON.
-    ///
-    /// If Accessibility is already granted, arms immediately.
-    /// Otherwise calls `AXIsProcessTrustedWithOptions` to trigger the macOS permission
-    /// prompt, then polls every 0.5s for up to 30s (RESEARCH OQ-01(b)).
-    /// Reverts the toggle + shows denial message if not granted within 30s (Pitfall 3).
-    ///
-    /// SECURITY (T-04-11): This is the ONLY call site for `AXIsProcessTrustedWithOptions`.
-    /// It is reached exclusively via explicit user opt-in. Never called at launch or hotkey use.
-    private func handlePasteBackToggleOn() {
-        showDenialMessage = false
-        isWaitingForPermission = false
-
-        if AXIsProcessTrusted() {
-            // Permission already granted — arm immediately.
-            prefs.pasteBackEnabled = true
-            return
-        }
-
-        // Request permission with prompt — opens System Settings Accessibility pane.
-        // Returns immediately (usually false on first call); user must grant manually.
-        // Use string literal key to avoid Swift 6 Sendable issue with kAXTrustedCheckOptionPrompt
-        // CFString global. The key value is "AXTrustedCheckOptionPrompt" (stable since macOS 10.9).
-        let options: NSDictionary = ["AXTrustedCheckOptionPrompt": true]
-        AXIsProcessTrustedWithOptions(options)
-
-        // Immediate feedback: the prompt may be delayed or (on ad-hoc builds) never
-        // surface, so show a waiting indicator the moment we start polling.
-        isWaitingForPermission = true
-
-        // Poll every 0.5s for up to 30s (60 polls) — macOS has no TCC change callback.
-        var pollCount = 0
-        accessibilityPollTimer?.invalidate()
-        accessibilityPollTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [self] timer in
-            pollCount += 1
-            if AXIsProcessTrusted() {
-                // Granted — arm the toggle.
-                timer.invalidate()
-                accessibilityPollTimer = nil
-                DispatchQueue.main.async {
-                    prefs.pasteBackEnabled = true
-                    showDenialMessage = false
-                    isWaitingForPermission = false
-                }
-            } else if pollCount >= 60 {
-                // 30 seconds elapsed without grant — revert toggle + show denial message.
-                timer.invalidate()
-                accessibilityPollTimer = nil
-                DispatchQueue.main.async {
-                    prefs.pasteBackEnabled = false
-                    showDenialMessage = true
-                    isWaitingForPermission = false
-                }
-            }
+        // Re-check permission when the window appears or regains focus — this is how
+        // the UI flips from the grant button to the toggle after the user returns
+        // from System Settings (no timer/poll needed).
+        .onAppear { hasAccessibility = AXIsProcessTrusted() }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            hasAccessibility = AXIsProcessTrusted()
         }
     }
 }
