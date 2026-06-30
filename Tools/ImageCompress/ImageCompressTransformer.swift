@@ -102,6 +102,19 @@ enum ImageCompressTransformer {
                 try? FileManager.default.removeItem(at: destURL) // clean up partial write
                 return .failure(.writeFailed)
             }
+
+            // 5e. Never-larger-than-ORIGINAL guard (GAP 1). ImageIO can re-save a JPEG/HEIC/TIFF
+            //     LARGER than the source. If the re-encode grew, replace it with a byte-identical
+            //     copy of the original so the output is never larger than the input. Use try?
+            //     throughout; on any copy failure leave the (valid, same-format) re-encode in place
+            //     rather than failing the whole op (INFRA-17). Size via fileSizeKey only (T-05-06B);
+            //     destURL is collision-disambiguated so copyItem targets a fresh path (T-05-06A).
+            let origSize = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? Int.max
+            let newSize  = (try? destURL.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+            if newSize > origSize {
+                try? FileManager.default.removeItem(at: destURL)
+                try? FileManager.default.copyItem(at: url, to: destURL)
+            }
         }
 
         // 9. Size delta for the hero "% saved" metric — never Data(contentsOf:) for large files
@@ -148,28 +161,43 @@ enum ImageCompressTransformer {
             return truecolorReencode(src: src, uti: uti, destURL: destURL)
         }
 
-        // 3. Never-larger guard (D-06). The common photographic case wins outright and skips the
-        //    truecolor re-encode entirely (cheap in-memory / file-size comparison, no huge reads).
+        // 3. Never-larger-than-ORIGINAL guard (GAP 1). The ORIGINAL SOURCE FILE is a writable
+        //    candidate alongside {quantized, truecolor}. The common photographic case still wins
+        //    outright and skips the truecolor re-encode entirely (cheap fileSizeKey comparison,
+        //    never Data(contentsOf:) — T-05-06B).
         let origBytes = (try? source.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? Int.max
         if indexedData.count < origBytes {
-            // Quantized output already beats the source — write it directly.
+            // Quantized output already beats the source — write it directly (fast path).
             return (try? indexedData.write(to: destURL)) != nil
         }
 
-        // Quantized output did NOT beat the source: produce the plain truecolor re-encode and keep
-        // whichever of {quantized, truecolor} is smaller, so the user never gets a bigger file.
+        // Quantized output did NOT beat the source. Produce the plain truecolor re-encode and then
+        // pick the SMALLEST of {original, quantized, truecolor}, so the user never gets a bigger
+        // file than the original (GAP 1) — not merely never bigger than a truecolor re-encode.
         let truecolorURL = destURL.deletingLastPathComponent()
             .appendingPathComponent(".\(UUID().uuidString)-truecolor.png")
         defer { try? FileManager.default.removeItem(at: truecolorURL) }
 
-        if truecolorReencode(src: src, uti: uti, destURL: truecolorURL),
-           let truecolorBytes = try? truecolorURL.resourceValues(forKeys: [.fileSizeKey]).fileSize {
-            if truecolorBytes <= indexedData.count {
-                // Truecolor wins — move it into place.
-                return (try? FileManager.default.moveItem(at: truecolorURL, to: destURL)) != nil
-            }
+        // truecolor byte count (Int.max if the re-encode could not be produced → never selected).
+        var truecolorBytes = Int.max
+        let truecolorOK = truecolorReencode(src: src, uti: uti, destURL: truecolorURL)
+        if truecolorOK,
+           let tb = try? truecolorURL.resourceValues(forKeys: [.fileSizeKey]).fileSize {
+            truecolorBytes = tb
         }
-        // Quantized is the smaller (or only) option — write it.
+
+        // If the ORIGINAL is the smallest (or ties), copy it through byte-identically. destURL is
+        // already collision-disambiguated (T-05-06A), so copyItem targets a fresh path.
+        if origBytes <= indexedData.count && origBytes <= truecolorBytes {
+            return (try? FileManager.default.copyItem(at: source, to: destURL)) != nil
+        }
+
+        // Original is not smallest. Keep whichever of {truecolor, quantized} is smaller.
+        if truecolorOK && truecolorBytes <= indexedData.count {
+            // Truecolor wins — move it into place.
+            return (try? FileManager.default.moveItem(at: truecolorURL, to: destURL)) != nil
+        }
+        // Quantized is the smaller (or only) writable option — write it.
         return (try? indexedData.write(to: destURL)) != nil
     }
 

@@ -164,6 +164,30 @@ struct ImageCompressTransformerTests {
         return url
     }
 
+    /// Writes a minimal, already-optimally-encoded 1×1 grayscale PNG (67 bytes) to `url`.
+    ///
+    /// This reproduces the real GAP-1 trigger: an externally-optimized PNG (pngquant/zopfli class)
+    /// whose byte size is SMALLER than both Flint's 256-color quantized indexed output AND ImageIO's
+    /// truecolor re-encode. ImageIO cannot synthesise a PNG this small (its encoder is unoptimised),
+    /// so the bytes are written verbatim. For this fixture the ORIGINAL is the smallest candidate,
+    /// forcing the never-larger-than-original guard to copy the source through byte-identically.
+    @discardableResult
+    private func writeAlreadyOptimizedPNG(to url: URL) throws -> URL {
+        let bytes: [UInt8] = [
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,             // PNG signature
+            0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,             // IHDR length(13) + "IHDR"
+            0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,             // width=1, height=1
+            0x08, 0x00, 0x00, 0x00, 0x00, 0x3A, 0x7E, 0x9B, 0x55,       // 8-bit grayscale + IHDR CRC
+            0x00, 0x00, 0x00, 0x0A, 0x49, 0x44, 0x41, 0x54,             // IDAT length(10) + "IDAT"
+            0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00, 0x05, 0x00, 0x01, // zlib-deflated single pixel
+            0x0D, 0x0A, 0x2D, 0xB4,                                     // IDAT CRC
+            0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44,             // IEND length(0) + "IEND"
+            0xAE, 0x42, 0x60, 0x82                                      // IEND CRC
+        ]
+        try Data(bytes).write(to: url)
+        return url
+    }
+
     /// Reads pixel dimensions of an image file via ImageIO.
     private func pixelDimensions(of url: URL) -> (width: Int, height: Int)? {
         guard let src = CGImageSourceCreateWithURL(url as CFURL, nil),
@@ -530,8 +554,11 @@ struct ImageCompressTransformerTests {
         let dir = try makeTempDir()
         defer { try? FileManager.default.removeItem(at: dir) }
 
+        // An already-optimized PNG that both the quantizer and a truecolor re-encode fail to beat,
+        // so the ORIGINAL is the smallest candidate and must be copied through verbatim.
         let source = dir.appendingPathComponent("logo.png")
-        try writeTinyPNG(to: source)
+        try writeAlreadyOptimizedPNG(to: source)
+        let origBytes = (try? source.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? Int.max
 
         let result = ImageCompressTransformer.compress(url: source, quality: 0.6)
 
@@ -539,6 +566,12 @@ struct ImageCompressTransformerTests {
             Issue.record("Expected .success but got \(result)")
             return
         }
+
+        // Never larger than the original (core GAP-1 guarantee) and percentSaved never negative.
+        #expect(compressed.compressedBytes <= origBytes,
+                "Output (\(compressed.compressedBytes)B) must not exceed original (\(origBytes)B)")
+        #expect(compressed.percentSaved >= 0,
+                "percentSaved must never be negative, got \(compressed.percentSaved)%")
 
         // The produced file's bytes must equal the original file's bytes — proves copy-through,
         // not a larger re-encode (Data read here is test-only; the transformer uses fileSizeKey).
