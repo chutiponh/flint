@@ -107,10 +107,11 @@ blocked: 0
   artifacts:
     - path: "Tools/ImageCompress/ImageCompressView.swift"
       issue: "compress fires immediately onDrop; no re-run-on-quality-change path; slider effect is deferred and non-obvious"
+  user_decision: "CHOSEN (2026-07-01): Option C — add an explicit 'Re-compress at {n}%' button. Keep compress-on-drop. When quality/preset changes after a batch exists, show the button; clicking re-runs compress() on the retained source URLs at the new quality. Rejected auto-re-run (would spew -compressed-N files per slider tick) and next-drop-only (can't tweak-and-see on an existing batch)."
   missing:
-    - "RECOMMENDED (option C): add an explicit 'Re-compress at {n}%' action. Store lastSourceURLs + add recompress() on the ViewModel; show a button when quality/preset changes after a batch exists. Preserves the deliberate drop-driven trigger (05-UI-SPEC line 119) AND respects that compression WRITES FILES — so each write stays an explicit user action."
-    - "Why NOT Hash-style auto .onChange: Hash is pure/in-memory/idempotent so re-running is free; compression writes a disambiguated -compressed-N file per run, so auto-re-run on every slider tick would spew files. The sibling idiom cannot be copied verbatim."
-    - "Optional (option B): clarify pre-first-drop copy ('Set quality, then drop'). Design decision — route through discuss/plan, not a one-line fix."
+    - "Store lastSourceURLs on the ViewModel + add recompress() that re-runs compress() on them at the current quality."
+    - "In ImageCompressView, show a 'Re-compress at {n}%' button when rows are non-empty AND quality changed since the last run (track last-run quality). Wire it to viewModel.recompress()."
+    - "Hidden/no-op when the batch is entirely lossless and only quality changed (quality doesn't apply to PNG/TIFF)."
   debug_session: ".planning/debug/quality-slider-workflow-contradiction.md"
 
 - truth: "Pressing Cancel stops in-flight work and the compressing row leaves the spinner state"
