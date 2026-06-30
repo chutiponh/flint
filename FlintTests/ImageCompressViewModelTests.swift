@@ -215,8 +215,11 @@ struct ImageCompressViewModelTests {
         }
 
         // Poll (bounded deadline) until the in-flight row has RESOLVED out of .compressing.
-        // Final invariant: NO row remains .compressing — every row is .pending, .done, or .failed.
-        // (Either it finished just-in-time, or cancel resolved it — but it is NEVER stuck spinning.)
+        // The deadline is deliberately tight (5s) relative to how long an UN-cancelled quantization of
+        // this 1024×1024 fully-unique-color fixture takes (tens of seconds). So this is not merely a
+        // "no row stuck forever" check — it also proves cooperative cancellation ACTUALLY STOPPED the
+        // work (must_have #2). A non-cancellable implementation would still be .compressing at 5s and
+        // FAIL the assertion below; only a real cooperative cancel resolves the row in time.
         let deadline = Date().addingTimeInterval(5)
         var anyCompressing = true
         while Date() < deadline {
@@ -226,6 +229,11 @@ struct ImageCompressViewModelTests {
             if !anyCompressing { break }
             try await Task.sleep(nanoseconds: 50_000_000) // 50ms
         }
+
+        // Final invariant: NO row remains .compressing within the bounded deadline — every row is
+        // .pending, .done, or .failed. (Cancel resolved the in-flight row; it is NEVER stuck spinning,
+        // and the heavy work was actually interrupted rather than running to completion.)
+        #expect(anyCompressing == false, "Row still .compressing at the deadline — cancel did not stop the in-flight work")
 
         let rows = await MainActor.run(body: { vm.rows })
         for row in rows {

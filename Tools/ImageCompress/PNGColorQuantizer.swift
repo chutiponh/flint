@@ -69,7 +69,14 @@ enum PNGColorQuantizer {
         // Unique colors with occurrence counts (median-cut splits on unique colors, weighted by count).
         var counts: [UInt32: Int] = [:]
         counts.reserveCapacity(min(pixelCount, 4096))
-        for key in pixelKeys { counts[key, default: 0] += 1 }
+        for (i, key) in pixelKeys.enumerated() {
+            // Cooperative cancellation checkpoint (T-05-07A). For a many-unique-color image this
+            // dictionary build over ~pixelCount entries is itself heavy and precedes median-cut.
+            // Checked every 4096 entries → amortized O(1). Returning nil routes through the
+            // transformer's truecolor fallback / typed Result (INFRA-17).
+            if i & 0xFFF == 0 && Task.isCancelled { return nil }
+            counts[key, default: 0] += 1
+        }
 
         // --- 3. Median-cut on RGB; carry alpha along for per-box averaging. ---
         struct ColorEntry { let r, g, b, a: UInt8; let count: Int }
@@ -103,6 +110,11 @@ enum PNGColorQuantizer {
 
         // Split until we reach `cap` boxes or no box can be split further.
         while boxes.count < cap {
+            // Cooperative cancellation checkpoint (T-05-07A). Median-cut over a many-unique-color
+            // image (each iteration sorts a large color slice) can dominate runtime, so the per-pixel
+            // mapping loop alone is not responsive enough — check here too. O(1), outside the inner
+            // sort. Returning nil routes through the transformer's truecolor fallback (INFRA-17).
+            if Task.isCancelled { return nil }
             // Pick the splittable box with the largest single-axis range.
             var targetIndex = -1
             var bestRange = 0
@@ -174,6 +186,10 @@ enum PNGColorQuantizer {
 
         var indices = [UInt8](repeating: 0, count: pixelCount)
         for i in 0..<pixelCount {
+            // Cooperative cancellation checkpoint (T-05-07A): this per-pixel nearest-palette mapping
+            // is the other long loop. Checked every 4096 pixels → amortized O(1). Returning nil routes
+            // through the transformer's truecolor fallback / typed Result — never a crash (INFRA-17).
+            if i & 0xFFF == 0 && Task.isCancelled { return nil }
             let key = pixelKeys[i]
             if let cached = lookupCache[key] {
                 indices[i] = cached

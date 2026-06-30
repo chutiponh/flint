@@ -123,6 +123,21 @@ final class ImageCompressViewModel: ToolShortcutActions {
     private var task: Task<Void, Never>?
     private let onSaveHistory: (HistoryEntry) -> Void
 
+    /// The in-flight per-image work Task (the off-main `Task.detached` quantization for the CURRENT
+    /// image). Stored so cancel() can cancel it DIRECTLY. A detached Task opts out of INHERITED
+    /// cancellation, so cancelling the enclosing batch Task alone would never flip Task.isCancelled
+    /// inside the transformer's quantize checkpoint — but an explicit .cancel() on THIS stored handle
+    /// does, which is what makes the cooperative checkpoint fire and stops the heavy work mid-flight
+    /// (T-05-07A). Task.detached is also what keeps the synchronous nonisolated compressOffMain OFF the
+    /// MainActor (a plain Task in this @MainActor context would run it on the main thread — INFRA-18).
+    private var currentWorkTask: Task<Result<ImageCompressTransformer.CompressedImage, ImageCompressTransformer.CompressError>, Never>?
+
+    /// Monotonic batch generation. compress() bumps this and the batch Task captures its value so the
+    /// completion path can tell a user-cancel of THIS batch (still current → resolve UI + flip
+    /// isCompressing) apart from a supersede by a newer compress() (newer batch owns isCompressing →
+    /// leave it alone, CR-02).
+    private var batchGeneration: Int = 0
+
     // MARK: - Init
 
     init(onSaveHistory: @escaping (HistoryEntry) -> Void) {
@@ -139,20 +154,26 @@ final class ImageCompressViewModel: ToolShortcutActions {
     ///             Only applied to JPEG/HEIC; PNG/TIFF receive nil props (D-05).
     ///             The View maps its 0–100 slider to 0.0–1.0 before calling this.
     func compress(urls: [URL], quality: Double) {
-        // Cancel any in-flight batch before starting a new one
+        // Cancel any in-flight batch before starting a new one (both the batch loop and the
+        // currently-running per-image work Task, so a superseded image stops quantizing too).
         task?.cancel()
+        currentWorkTask?.cancel()
 
         // Build the row list with format tags BEFORE compression starts (D-05 gate)
         rows = urls.map { CompressRow(sourceURL: $0, format: ImageFormatTag.from(url: $0), state: .pending) }
         isCompressing = true
+
+        // Bump the batch generation so the completion path can detect supersede (CR-02).
+        batchGeneration += 1
+        let myGeneration = batchGeneration
 
         // Capture the closure BEFORE the off-main Task (mirrors HashViewModel line 113).
         // The closure is called on the MainActor so no cross-actor send occurs.
         let capturedOnSave = onSaveHistory
         let sourceURLs = urls
 
-        // Use Task (not Task.detached) so the closure call inside MainActor.run is safe.
-        // The actual ImageIO work is dispatched further off via Task.detached inside the loop.
+        // OUTER batch loop = MainActor-bound `Task { }` (NOT Task.detached) so the non-Sendable
+        // capturedOnSave/onSaveHistory closure is never sent across an actor boundary (05-02 auto-fix #1).
         task = Task { [weak self] in
             for (i, url) in sourceURLs.enumerated() {
                 // Cancellation check per iteration — stops the loop before the next image
@@ -168,17 +189,43 @@ final class ImageCompressViewModel: ToolShortcutActions {
 
                 guard !Task.isCancelled else { break }
 
-                // Run the actual ImageIO work off the MainActor in a child Task.
-                // autoreleasepool per image bounds peak CGImage memory (INFRA-18, Pitfall 4).
-                let result: Result<ImageCompressTransformer.CompressedImage, ImageCompressTransformer.CompressError> = await Task.detached(priority: .userInitiated) {
-                    autoreleasepool {
-                        ImageCompressTransformer.compress(url: url, quality: quality)
-                    }
-                }.value
+                // INNER per-image work = a Task.detached running the `nonisolated` helper compressOffMain.
+                //
+                // Task.detached is REQUIRED for off-main: a PLAIN `Task { }` created inside this
+                // @MainActor batch Task inherits MainActor isolation, and calling a SYNCHRONOUS
+                // nonisolated function (compressOffMain) from it does NOT cause an actor hop — so the
+                // 58s quantization would run ON the MainActor, both breaking INFRA-18 and freezing the UI
+                // (the user's Cancel tap could not even be processed until the work finished). Task.detached
+                // runs the synchronous work on a background executor (INFRA-18, testOffMainProof).
+                //
+                // Cancellation still works because we store the detached Task in currentWorkTask and
+                // cancel() calls .cancel() on it DIRECTLY. Detached only opts out of INHERITED cancellation;
+                // an explicit .cancel() on the stored handle flips Task.isCancelled true inside
+                // compressOffMain, so the cooperative checkpoint in PNGColorQuantizer.quantize fires and the
+                // heavy work stops mid-flight (T-05-07A). autoreleasepool lives inside compressOffMain,
+                // bounding peak CGImage memory (INFRA-18, Pitfall 4).
+                let workTask = Task.detached(priority: .userInitiated) {
+                    ImageCompressTransformer.compressOffMain(url: url, quality: quality)
+                }
+                await MainActor.run { [weak self] in self?.currentWorkTask = workTask }
+                let result = await workTask.value
+                await MainActor.run { [weak self] in
+                    if self?.currentWorkTask == workTask { self?.currentWorkTask = nil }
+                }
 
-                // WR-01: re-check cancellation after the await — a cancelled batch must not
-                // apply its stale ImageIO result onto the NEXT batch's rows (same index reuse).
-                guard !Task.isCancelled else { break }
+                // GAP 3 fix: resolve the in-flight row instead of stranding it. The row was set
+                // .compressing above; on cancellation it MUST leave that state or the View spins forever.
+                // Reset it to .pending (renders "—"; no View change needed). A freshly-cancelled batch
+                // must NOT apply its stale result onto a newer batch's rows either (WR-01).
+                if Task.isCancelled || workTask.isCancelled {
+                    await MainActor.run { [weak self] in
+                        guard let self else { return }
+                        if i < self.rows.count, case .compressing = self.rows[i].state {
+                            self.rows[i].state = .pending
+                        }
+                    }
+                    break
+                }
 
                 // Live per-row update on MainActor (D-09) — failure = row state, not a crash (INFRA-17)
                 await MainActor.run { [weak self] in
@@ -189,10 +236,22 @@ final class ImageCompressViewModel: ToolShortcutActions {
                 }
             }
 
-            // CR-02: if this batch was cancelled (superseded by a newer compress() call), do NOT
-            // touch shared state — isCompressing belongs to the new batch, and firing history here
-            // would save the new batch's rows under this stale task.
-            guard !Task.isCancelled else { return }
+            // CR-02 + GAP 3 completion. Two cancellation shapes must be distinguished:
+            //   (a) USER cancel of THIS batch — this task is still the current generation, so it owns
+            //       isCompressing and MUST flip it false now that the in-flight row resolved above (the
+            //       Cancel button stays visible until exactly this point — non-eager). NO history.
+            //   (b) SUPERSEDE by a newer compress() — a newer batch already set isCompressing = true and
+            //       owns it; touching it here would clobber the new batch's state, and firing history would
+            //       save the new batch's rows under this stale task. Leave everything alone.
+            if Task.isCancelled {
+                await MainActor.run { [weak self] in
+                    guard let self else { return }
+                    if self.batchGeneration == myGeneration {
+                        self.isCompressing = false
+                    }
+                }
+                return
+            }
 
             // Batch complete — update isCompressing and fire history (MainActor, so capturedOnSave is safe)
             await MainActor.run { [weak self] in
@@ -230,12 +289,17 @@ final class ImageCompressViewModel: ToolShortcutActions {
 
     // MARK: - Cancellation
 
-    /// Cancels the in-flight batch Task.
-    /// Already-finished rows retain their state; pending rows stop progressing.
+    /// Requests cancellation of the in-flight batch.
+    ///
+    /// GAP 3: this is NON-EAGER. It cancels BOTH the batch loop Task and the currently-running per-image
+    /// work Task (the latter is what flips Task.isCancelled inside the transformer's quantize checkpoint,
+    /// actually stopping the heavy work — T-05-07A). It does NOT flip isCompressing false or drop the
+    /// task reference here: the batch Task observes cancellation, resolves the in-flight .compressing row
+    /// out of its spinning state, and only THEN flips isCompressing = false on the MainActor (see the
+    /// completion path in compress()). So the Cancel button stays visible until the row resolves.
     func cancel() {
+        currentWorkTask?.cancel()
         task?.cancel()
-        task = nil
-        isCompressing = false
     }
 
     // MARK: - ToolShortcutActions (INFRA-16)
@@ -253,8 +317,11 @@ final class ImageCompressViewModel: ToolShortcutActions {
         return done.joined(separator: "\n")
     }
 
-    /// Clears all rows and cancels any in-flight batch.
+    /// Clears all rows and cancels any in-flight batch. This is a HARD reset (unlike cancel()): the user
+    /// has cleared the input entirely, so there is no row to keep spinning — drop everything immediately.
     func clearInput() {
+        currentWorkTask?.cancel()
+        currentWorkTask = nil
         task?.cancel()
         task = nil
         rows = []

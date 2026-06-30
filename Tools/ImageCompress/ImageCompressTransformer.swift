@@ -128,6 +128,24 @@ enum ImageCompressTransformer {
         ))
     }
 
+    // MARK: - Off-main wrapper (INFRA-18 + T-05-07A/B)
+
+    /// Off-main entry point for the ViewModel's per-image work Task.
+    ///
+    /// `nonisolated` is REQUIRED: it guarantees this does NOT inherit MainActor isolation, so when the
+    /// @MainActor ViewModel creates a `Task { }` that calls it, the heavy quantization runs on a default
+    /// (background) executor — INFRA-18 off-main is preserved (testOffMainProof). The cooperative
+    /// `Task.isCancelled` checkpoint inside `PNGColorQuantizer.quantize` reads the calling work Task's
+    /// cancellation flag, which the ViewModel sets by cancelling that work Task directly (T-05-07A).
+    ///
+    /// The `autoreleasepool` lives here (it previously lived in the inline Task.detached closure) so peak
+    /// CGImage memory stays bounded per image (INFRA-18, Pitfall 4).
+    nonisolated static func compressOffMain(url: URL, quality: Double) -> Result<CompressedImage, CompressError> {
+        autoreleasepool {
+            compress(url: url, quality: quality)
+        }
+    }
+
     // MARK: - PNG quantization path (UAT Test 8)
 
     /// Writes a compressed PNG to `destURL` using quantization, with a truecolor-re-encode fallback
