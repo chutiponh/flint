@@ -31,15 +31,17 @@ result: pass
 
 ### 5. PNG transparency preserved
 expected: Compressing a PNG that has transparent areas keeps those areas transparent after compression — no black/white fill replacing the transparency.
-result: issue
+result: pass
 reported: "transparency works, but the output is BIGGER — Google-Logo-2015.png went 30 KB → 46 KB (+55%)"
 severity: major
+closure: "GAP 1 fixed (05-06): never-larger-than-ORIGINAL guard on both PNG and non-PNG paths — original bytes copied through when nothing beats them. Re-verified by human UAT 2026-07-01 on a clean build: already-optimized PNG no longer grows."
 
 ### 6. Lossless slider gate (D-05)
 expected: When every dropped file is PNG/TIFF, the quality slider is disabled and a helper line explains lossless formats ignore the quality setting.
-result: issue
+result: pass
 reported: "slider IS disabled correctly, but the slider/presets are contradictory with the workflow — dropping an image compresses it immediately, so there's no point at which the slider can affect the images you just dropped. When does it actually take effect?"
 severity: minor
+closure: "GAP 2 fixed (05-08): explicit 'Re-compress at {n}%' button appears when quality changes after a batch exists, re-running compression at the new quality. Hidden for all-lossless batches. Re-verified by human UAT 2026-07-01."
 
 ### 7. Quality presets (Web/Email/Max)
 expected: The matching preset button (Web 60 / Email 75 / Max 95) renders prominent when active and plain otherwise; selecting a preset moves the slider. Lower quality on a JPEG produces a smaller file.
@@ -51,25 +53,28 @@ result: pass
 
 ### 9. Cancel mid-batch
 expected: Pressing Cancel during a large batch stops pending rows; already-finished rows keep their results; the Cancel button hides afterward.
-result: issue
+result: pass
 reported: "after pressing Cancel the row keeps spinning (still processing) — the compressing image never stops and the row stays stuck in the spinner state"
 severity: major
+closure: "GAP 3 fixed (05-07): cooperative cancellation stops in-flight quantization (0.79s vs 58s) and resolves the row out of .compressing; Cancel stays visible until the row resolves. Follow-up (2026-07-01): also fixed a leftover-file bug — a cancelled compress now deletes any output it wrote (transformer post-write Task.isCancelled gate). Re-verified by human UAT: spinner stops AND no compressed file remains."
 
 ### 10. Collision disambiguation (D-07/D-08)
 expected: Compressing the same source twice produces `photo-compressed.jpg` then `photo-compressed-1.jpg` — the original is never overwritten.
-result: issue
+result: pass
 reported: "dropping the same image a second time shows nothing new in the table AND writes no second file to disk — the re-drop appears to do nothing"
 severity: major
 note: "Tested immediately after the stuck-Cancel issue (Test 9). The disambiguation logic (-compressed-1) cannot be reached because the second compression never produces output. Likely interacts with the Test-9 stuck state; diagnosis must confirm whether a clean-state re-drop disambiguates correctly or whether the drop handler itself is at fault."
+closure: "GAP 4 fixed (05-07 disambiguation) + follow-up (2026-07-01). Root cause beyond the Test-9 residue: every drop REPLACED the results list, so a re-drop overwrote the prior row instead of adding one. Refactored the ViewModel to a serial work QUEUE — drops now accumulate (append rows + enqueue) whether the previous batch is finished OR still compressing (drop-while-loading), tracking rows by stable id. File-level -compressed-1 disambiguation was already correct. Also added a 'Clear' button (wires clearInput). Re-verified by human UAT: re-drop appends a second row + writes -compressed-1, both when idle and mid-compression."
 
 ## Summary
 
 total: 10
-passed: 6
-issues: 4
+passed: 10
+issues: 0
 pending: 0
 skipped: 0
 blocked: 0
+gap_closure: "Tests 5/6/9/10 re-passed 2026-07-01 on a clean build after 05-06/05-07/05-08 + follow-up fixes (cancel-leftover-file cleanup, serial work-queue for drop-while-loading accumulation, Clear button). See per-test 'closure' notes and the Gaps section (all now status: closed)."
 
 ## Gaps
 
@@ -84,7 +89,7 @@ blocked: 0
   missing: []
 
 - truth: "Compressed PNG output is never larger than the original file (it's a compressor)"
-  status: failed
+  status: closed
   reason: "User reported: Google-Logo-2015.png 30 KB → 46 KB (+55%). Transparency preserved, but file grew."
   severity: major
   test: 5
@@ -99,7 +104,7 @@ blocked: 0
   debug_session: ".planning/debug/png-output-larger-than-input.md"
 
 - truth: "The quality slider/presets have a clear, non-contradictory relationship to the compress action"
-  status: failed
+  status: closed
   reason: "User reported: drop-to-compress is immediate, so the quality slider can never affect the images already dropped. Its effect is invisible/deferred-to-next-drop, and it's disabled entirely for PNG/TIFF — so for the all-lossless case it appears to do nothing at all."
   severity: minor
   test: 6
@@ -115,7 +120,7 @@ blocked: 0
   debug_session: ".planning/debug/quality-slider-workflow-contradiction.md"
 
 - truth: "Pressing Cancel stops in-flight work and the compressing row leaves the spinner state"
-  status: failed
+  status: closed
   reason: "User reported: after Cancel the single compressing row keeps spinning; the image never stops processing and the row stays stuck in .compressing."
   severity: major
   test: 9
@@ -136,7 +141,7 @@ blocked: 0
   debug_session: ".planning/debug/cancel-leaves-row-stuck.md"
 
 - truth: "Compressing the same source twice writes photo-compressed then photo-compressed-1 without overwriting the original (D-07/D-08)"
-  status: failed
+  status: closed
   reason: "User reported (clarified): dropping the same image a second time shows nothing new in the table AND writes no second file to disk — the re-drop appears to do nothing."
   severity: major
   test: 10
