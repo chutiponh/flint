@@ -88,9 +88,6 @@ final class NumberBaseViewModel: ToolShortcutActions {
     /// Called when the user edits any of the four text fields.
     /// Synchronously re-parses and updates the canonical pattern (CF-01 — cheap, no debounce).
     func update(from base: NumberBase, text: String) {
-        lastEditedBase = base
-        lastEditedText = text
-
         guard !text.isEmpty else {
             // Empty field: silently reset without error (allow clearing)
             overflowWarning = false
