@@ -62,7 +62,9 @@ struct ImageCompressView: View {
             let capturedQuality = min(max(quality / 100.0, 0.0), 1.0)
             group.notify(queue: .main) {
                 Task { @MainActor in
-                    viewModel.compress(urls: urls, quality: capturedQuality)
+                    // GAP 6: drops accumulate — append onto the existing finished batch so re-dropping
+                    // the same image adds a row (and writes -compressed-1) instead of replacing it.
+                    viewModel.compress(urls: urls, quality: capturedQuality, append: true)
                 }
             }
             return true
@@ -198,6 +200,15 @@ struct ImageCompressView: View {
                             viewModel.recompress(quality: mappedQuality)
                         }
                         .accessibilityLabel("Re-compress at \(Int(quality)) percent")
+                    }
+                    // GAP 7: Clear resets the results list back to the empty drop-prompt state (wires
+                    // the existing clearInput()). Shown whenever a finished batch exists; hidden while
+                    // compressing (Cancel owns that state).
+                    if !viewModel.isCompressing {
+                        Button("Clear") {
+                            viewModel.clearInput()
+                        }
+                        .accessibilityLabel("Clear results")
                     }
                 }
 

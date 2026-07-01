@@ -117,6 +117,14 @@ enum ImageCompressTransformer {
             }
         }
 
+        // GAP 5: a cancel mid-flight still leaves a written destURL (the quantizer bails to the
+        // truecolor/copy-through fallback, which writes). Delete it so a cancelled compress leaves
+        // no output file on disk. The ViewModel already discards this result on cancel.
+        if Task.isCancelled {
+            try? FileManager.default.removeItem(at: destURL)
+            return .failure(.writeFailed)
+        }
+
         // 9. Size delta for the hero "% saved" metric — never Data(contentsOf:) for large files
         let origBytes = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
         let newBytes  = (try? destURL.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0

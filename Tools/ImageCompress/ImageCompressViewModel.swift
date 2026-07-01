@@ -132,6 +132,12 @@ final class ImageCompressViewModel: ToolShortcutActions {
     private var task: Task<Void, Never>?
     private let onSaveHistory: (HistoryEntry) -> Void
 
+    /// Pending work items the drain loop hasn't started yet. Each item carries the row's STABLE id
+    /// (not a positional index) so appending more drops mid-flight never shifts an in-flight item's
+    /// target (GAP 6b). A drop enqueues here and (re)starts the drain loop; recompress()/cancel() clear
+    /// this so superseded/cancelled work never runs.
+    private var pendingQueue: [(rowID: UUID, url: URL, quality: Double)] = []
+
     /// The in-flight per-image work Task (the off-main `Task.detached` quantization for the CURRENT
     /// image). Stored so cancel() can cancel it DIRECTLY. A detached Task opts out of INHERITED
     /// cancellation, so cancelling the enclosing batch Task alone would never flip Task.isCancelled
@@ -162,63 +168,71 @@ final class ImageCompressViewModel: ToolShortcutActions {
     ///   - quality: Lossy compression quality (0.0 = minimum, 1.0 = maximum).
     ///             Only applied to JPEG/HEIC; PNG/TIFF receive nil props (D-05).
     ///             The View maps its 0–100 slider to 0.0–1.0 before calling this.
-    func compress(urls: [URL], quality: Double) {
-        // Cancel any in-flight batch before starting a new one (both the batch loop and the
-        // currently-running per-image work Task, so a superseded image stops quantizing too).
-        task?.cancel()
-        currentWorkTask?.cancel()
-
-        // Retain the source URLs + quality of this run so recompress() can replay the batch at a
-        // new quality without re-dropping, and so the View can detect "quality changed since last
-        // run" to surface the explicit Re-compress affordance (05-08, GAP 2).
+    ///   - append: GAP 6 — when true (a fresh drop), the new rows are ADDED beside the existing ones
+    ///             and ENQUEUED onto the shared work queue, so drops accumulate whether the previous
+    ///             batch is finished OR still compressing (drop-while-loading). When false (recompress),
+    ///             the in-flight work is superseded and rows are replaced.
+    func compress(urls: [URL], quality: Double, append: Bool = false) {
+        // Retain the source URLs + quality of this run so recompress() can replay the batch at a new
+        // quality, and so the View can detect "quality changed since last run" (05-08, GAP 2).
         lastSourceURLs = urls
         lastRunQuality = quality
 
-        // Build the row list with format tags BEFORE compression starts (D-05 gate)
-        rows = urls.map { CompressRow(sourceURL: $0, format: ImageFormatTag.from(url: $0), state: .pending) }
-        isCompressing = true
+        if append {
+            // GAP 6b: accumulate — never cancel the in-flight item; just add rows + queue them and
+            // ensure the drain loop is running. Works whether idle or mid-compression.
+            let newRows = urls.map { CompressRow(sourceURL: $0, format: ImageFormatTag.from(url: $0), state: .pending) }
+            rows.append(contentsOf: newRows)
+            pendingQueue.append(contentsOf: zip(newRows, urls).map { ($0.id, $1, quality) })
+        } else {
+            // Supersede (recompress / replace): cancel the current item, drop any queued work, replace
+            // the row list. batchGeneration bump lets a superseded drain loop bow out cleanly (CR-02).
+            currentWorkTask?.cancel()
+            task?.cancel()
+            pendingQueue.removeAll()
+            let newRows = urls.map { CompressRow(sourceURL: $0, format: ImageFormatTag.from(url: $0), state: .pending) }
+            rows = newRows
+            pendingQueue = zip(newRows, urls).map { ($0.id, $1, quality) }
+        }
 
-        // Bump the batch generation so the completion path can detect supersede (CR-02).
+        startDrainIfNeeded()
+    }
+
+    /// Starts the single serial drain loop if it isn't already running. The loop pulls one queued item
+    /// at a time, compresses it off-main, and self-terminates when the queue empties. A single loop (not
+    /// one Task per drop) keeps compression serial + memory bounded (INFRA-18) and lets drops appended
+    /// mid-flight be picked up without spawning competing loops.
+    private func startDrainIfNeeded() {
+        guard task == nil else { return }  // a loop is already draining the queue
+
+        isCompressing = true
         batchGeneration += 1
         let myGeneration = batchGeneration
-
-        // Capture the closure BEFORE the off-main Task (mirrors HashViewModel line 113).
-        // The closure is called on the MainActor so no cross-actor send occurs.
         let capturedOnSave = onSaveHistory
-        let sourceURLs = urls
 
-        // OUTER batch loop = MainActor-bound `Task { }` (NOT Task.detached) so the non-Sendable
-        // capturedOnSave/onSaveHistory closure is never sent across an actor boundary (05-02 auto-fix #1).
+        // OUTER loop = MainActor-bound `Task { }` (NOT Task.detached) so the non-Sendable onSaveHistory
+        // closure is never sent across an actor boundary (05-02 auto-fix #1).
         task = Task { [weak self] in
-            for (i, url) in sourceURLs.enumerated() {
-                // Cancellation check per iteration — stops the loop before the next image
-                guard !Task.isCancelled else { break }
+            while true {
+                // Pull the next item on the MainActor. Cancellation (supersede) breaks out.
+                let item: (rowID: UUID, url: URL, quality: Double)? = await MainActor.run { [weak self] in
+                    guard let self, !Task.isCancelled, !self.pendingQueue.isEmpty else { return nil }
+                    return self.pendingQueue.removeFirst()
+                }
+                guard let item else { break }
 
-                // Mark row .compressing so the View shows a spinner (D-09)
+                // Locate this item's row BY ID (robust to appends shifting positions) and mark it
+                // .compressing (D-09).
                 await MainActor.run { [weak self] in
-                    guard let self else { return }
-                    if i < self.rows.count {
-                        self.rows[i].state = .compressing
-                    }
+                    guard let self, let idx = self.rows.firstIndex(where: { $0.id == item.rowID }) else { return }
+                    self.rows[idx].state = .compressing
                 }
 
-                guard !Task.isCancelled else { break }
-
-                // INNER per-image work = a Task.detached running the `nonisolated` helper compressOffMain.
-                //
-                // Task.detached is REQUIRED for off-main: a PLAIN `Task { }` created inside this
-                // @MainActor batch Task inherits MainActor isolation, and calling a SYNCHRONOUS
-                // nonisolated function (compressOffMain) from it does NOT cause an actor hop — so the
-                // 58s quantization would run ON the MainActor, both breaking INFRA-18 and freezing the UI
-                // (the user's Cancel tap could not even be processed until the work finished). Task.detached
-                // runs the synchronous work on a background executor (INFRA-18, testOffMainProof).
-                //
-                // Cancellation still works because we store the detached Task in currentWorkTask and
-                // cancel() calls .cancel() on it DIRECTLY. Detached only opts out of INHERITED cancellation;
-                // an explicit .cancel() on the stored handle flips Task.isCancelled true inside
-                // compressOffMain, so the cooperative checkpoint in PNGColorQuantizer.quantize fires and the
-                // heavy work stops mid-flight (T-05-07A). autoreleasepool lives inside compressOffMain,
-                // bounding peak CGImage memory (INFRA-18, Pitfall 4).
+                // INNER per-image work = Task.detached running the nonisolated compressOffMain OFF the
+                // MainActor (a plain Task here would run the synchronous work on the main thread, freezing
+                // the UI — INFRA-18/testOffMainProof). Stored in currentWorkTask so cancel() flips
+                // Task.isCancelled inside the quantizer checkpoint and stops the heavy work (T-05-07A).
+                let url = item.url, quality = item.quality
                 let workTask = Task.detached(priority: .userInitiated) {
                     ImageCompressTransformer.compressOffMain(url: url, quality: quality)
                 }
@@ -228,60 +242,37 @@ final class ImageCompressViewModel: ToolShortcutActions {
                     if self?.currentWorkTask == workTask { self?.currentWorkTask = nil }
                 }
 
-                // GAP 3 fix: resolve the in-flight row instead of stranding it. The row was set
-                // .compressing above; on cancellation it MUST leave that state or the View spins forever.
-                // Reset it to .pending (renders "—"; no View change needed). A freshly-cancelled batch
-                // must NOT apply its stale result onto a newer batch's rows either (WR-01).
+                // GAP 3: on cancel, resolve THIS row out of .compressing (never stranded/spinning) and
+                // stop the loop. Only the current item is cancelled — already-done rows keep their result.
                 if Task.isCancelled || workTask.isCancelled {
                     await MainActor.run { [weak self] in
-                        guard let self else { return }
-                        if i < self.rows.count, case .compressing = self.rows[i].state {
-                            self.rows[i].state = .pending
-                        }
+                        guard let self, let idx = self.rows.firstIndex(where: { $0.id == item.rowID }) else { return }
+                        if case .compressing = self.rows[idx].state { self.rows[idx].state = .pending }
                     }
                     break
                 }
 
-                // Live per-row update on MainActor (D-09) — failure = row state, not a crash (INFRA-17)
+                // Live per-row update (D-09) — failure = row state, not a crash (INFRA-17).
                 await MainActor.run { [weak self] in
-                    guard let self else { return }
-                    if i < self.rows.count {
-                        self.rows[i].apply(result)
-                    }
+                    guard let self, let idx = self.rows.firstIndex(where: { $0.id == item.rowID }) else { return }
+                    self.rows[idx].apply(result)
                 }
             }
 
-            // CR-02 + GAP 3 completion. Two cancellation shapes must be distinguished:
-            //   (a) USER cancel of THIS batch — this task is still the current generation, so it owns
-            //       isCompressing and MUST flip it false now that the in-flight row resolved above (the
-            //       Cancel button stays visible until exactly this point — non-eager). NO history.
-            //   (b) SUPERSEDE by a newer compress() — a newer batch already set isCompressing = true and
-            //       owns it; touching it here would clobber the new batch's state, and firing history would
-            //       save the new batch's rows under this stale task. Leave everything alone.
-            if Task.isCancelled {
-                await MainActor.run { [weak self] in
-                    guard let self else { return }
-                    if self.batchGeneration == myGeneration {
-                        self.isCompressing = false
-                    }
-                }
-                return
-            }
-
-            // Batch complete — update isCompressing and fire history (MainActor, so capturedOnSave is safe)
+            // Loop ended. Clear our task handle so a later drop can start a fresh loop, and settle
+            // isCompressing — but only if we're still the current generation (a supersede owns it now).
+            let wasCancelled = Task.isCancelled
             await MainActor.run { [weak self] in
                 guard let self else { return }
+                // A supersede bumped the generation and owns task/isCompressing now — don't touch them.
+                guard self.batchGeneration == myGeneration else { return }
+                self.task = nil
                 self.isCompressing = false
 
-                // Count successful rows
-                let successCount = self.rows.filter {
-                    if case .done = $0.state { return true }
-                    return false
-                }.count
-
+                // Fire ONE aggregate history entry for the drained set (skip on cancel — nothing done).
+                guard !wasCancelled else { return }
+                let successCount = self.rows.filter { if case .done = $0.state { return true }; return false }.count
                 guard successCount > 0 else { return }
-
-                // Build aggregate savings summary — no secrets, no new HistoryEntry column (T-05-06)
                 let filenames = self.rows.map { $0.sourceURL.lastPathComponent }.joined(separator: ", ")
                 let totalSaved = self.rows.compactMap { row -> Double? in
                     if case .done(let img) = row.state { return img.percentSaved }
@@ -289,8 +280,6 @@ final class ImageCompressViewModel: ToolShortcutActions {
                 }.reduce(0, +)
                 let avgSaved = totalSaved / Double(max(successCount, 1))
                 let outputSummary = "\(successCount) image\(successCount == 1 ? "" : "s") compressed, avg \(String(format: "%.0f", avgSaved))% saved"
-
-                // ONE entry per batch (05-PATTERNS.md line 150)
                 capturedOnSave(HistoryEntry(
                     tool: "image-compress",
                     input: filenames,
@@ -329,7 +318,11 @@ final class ImageCompressViewModel: ToolShortcutActions {
     /// task reference here: the batch Task observes cancellation, resolves the in-flight .compressing row
     /// out of its spinning state, and only THEN flips isCompressing = false on the MainActor (see the
     /// completion path in compress()). So the Cancel button stays visible until the row resolves.
+    ///
+    /// Also drops any queued-but-not-started items so a Cancel during a multi-drop batch stops the whole
+    /// queue, not just the current image. Queued rows stay .pending (render "—").
     func cancel() {
+        pendingQueue.removeAll()
         currentWorkTask?.cancel()
         task?.cancel()
     }
@@ -352,11 +345,18 @@ final class ImageCompressViewModel: ToolShortcutActions {
     /// Clears all rows and cancels any in-flight batch. This is a HARD reset (unlike cancel()): the user
     /// has cleared the input entirely, so there is no row to keep spinning — drop everything immediately.
     func clearInput() {
+        pendingQueue.removeAll()
         currentWorkTask?.cancel()
         currentWorkTask = nil
         task?.cancel()
         task = nil
+        // Bump generation so a still-resolving stale loop bows out (its completion guard fails) and
+        // can't clobber task/isCompressing after this hard reset.
+        batchGeneration += 1
         rows = []
         isCompressing = false
+        // GAP 7: forget the retained batch too, so a cleared state can't be replayed by recompress().
+        lastSourceURLs = []
+        lastRunQuality = 0
     }
 }

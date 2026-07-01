@@ -245,6 +245,12 @@ struct ImageCompressViewModelTests {
         // isCompressing must end false — the button is hidden only AFTER the row resolves.
         let finalCompressing = await MainActor.run(body: { vm.isCompressing })
         #expect(finalCompressing == false, "isCompressing must be false after the in-flight row resolves")
+
+        // GAP 5 (Test 9): a cancelled compress must leave NO output file on disk. The transformer's
+        // quantizer bails to the fallback write on cancel; the post-write cancellation gate deletes it.
+        let leftovers = try FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil)
+            .filter { $0.lastPathComponent.contains("-compressed") }
+        #expect(leftovers.isEmpty, "Cancelled compress left an output file on disk: \(leftovers.map(\.lastPathComponent))")
     }
 
     // MARK: - Test 4: History fires exactly once per successful batch
@@ -415,5 +421,88 @@ struct ImageCompressViewModelTests {
 
         let rows = await MainActor.run(body: { vm.rows })
         #expect(rows.count == 1)
+    }
+
+    // MARK: - GAP 6: re-dropping the same image appends a row (Test 10)
+
+    @Test("Re-dropping the same image with append:true adds a second row (does not replace)")
+    func testAppendRedropAddsRow() async throws {
+        let dir = try makeTempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let jpeg = try writeTinyJPEG(to: dir.appendingPathComponent("photo.jpg"))
+
+        let vm = await MainActor.run { ImageCompressViewModel(onSaveHistory: { _ in }) }
+
+        // First drop.
+        await MainActor.run { vm.compress(urls: [jpeg], quality: 0.6, append: true) }
+        try await drainBatch(vm)
+        let firstCount = await MainActor.run(body: { vm.rows.count })
+        #expect(firstCount == 1)
+
+        // Re-drop the SAME image — must append, not replace.
+        await MainActor.run { vm.compress(urls: [jpeg], quality: 0.6, append: true) }
+        try await drainBatch(vm)
+        let secondCount = await MainActor.run(body: { vm.rows.count })
+        #expect(secondCount == 2, "Re-drop must append a second row, not replace the first")
+    }
+
+    // MARK: - GAP 6b: dropping while the first image is still compressing appends + completes both
+
+    @Test("Dropping a second image WHILE the first is compressing appends and both finish")
+    func testAppendWhileCompressing() async throws {
+        let dir = try makeTempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        // Moderately-slow first image: big enough to still be compressing at 60ms, small enough to
+        // FINISH within the drain deadline (this test needs completion, not cancellation).
+        let slow = try writeSlowGradientPNG(to: dir.appendingPathComponent("slow.png"), width: 384, height: 384)
+        let fast = try writeTinyJPEG(to: dir.appendingPathComponent("fast.jpg"))
+
+        let vm = await MainActor.run { ImageCompressViewModel(onSaveHistory: { _ in }) }
+
+        await MainActor.run { vm.compress(urls: [slow], quality: 0.6, append: true) }
+        // Let the slow image reach .compressing, then drop the second one mid-flight.
+        try await Task.sleep(nanoseconds: 60_000_000)
+        let stillCompressing = await MainActor.run(body: { vm.isCompressing })
+        #expect(stillCompressing, "First image should still be compressing when the second drops")
+
+        await MainActor.run { vm.compress(urls: [fast], quality: 0.6, append: true) }
+        // Append is immediate — the second row appears without cancelling the first.
+        #expect(await MainActor.run(body: { vm.rows.count }) == 2, "Mid-flight drop must append a second row")
+
+        try await drainBatch(vm, timeout: 30)
+        let doneCount = await MainActor.run(body: {
+            vm.rows.filter { if case .done = $0.state { return true }; return false }.count
+        })
+        #expect(doneCount == 2, "Both the in-flight and the mid-flight-appended image must complete")
+    }
+
+    // MARK: - GAP 7: Clear resets rows and forgets the retained batch
+
+    @Test("clearInput empties rows and prevents recompress from replaying the cleared batch")
+    func testClearInputForgetsBatch() async throws {
+        let dir = try makeTempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let jpeg = try writeTinyJPEG(to: dir.appendingPathComponent("photo.jpg"))
+
+        let vm = await MainActor.run { ImageCompressViewModel(onSaveHistory: { _ in }) }
+        await MainActor.run { vm.compress(urls: [jpeg], quality: 0.6) }
+        try await drainBatch(vm)
+
+        await MainActor.run { vm.clearInput() }
+        let clearedRows = await MainActor.run(body: { vm.rows.count })
+        #expect(clearedRows == 0)
+
+        // recompress after clear is a no-op (batch forgotten) — no new rows appear.
+        await MainActor.run { vm.recompress(quality: 0.6) }
+        let afterRecompress = await MainActor.run(body: { vm.rows.count })
+        #expect(afterRecompress == 0, "recompress after clear must not replay the forgotten batch")
+    }
+
+    /// Waits (bounded) until the batch finishes compressing.
+    private func drainBatch(_ vm: ImageCompressViewModel, timeout: TimeInterval = 10) async throws {
+        let deadline = Date().addingTimeInterval(timeout)
+        while await MainActor.run(body: { vm.isCompressing }) && Date() < deadline {
+            try await Task.sleep(nanoseconds: 30_000_000)
+        }
     }
 }
