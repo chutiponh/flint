@@ -1,34 +1,33 @@
-### Phase 5: add image compression feature
+### Phase 6: remove the history feature
 
-**Goal:** A developer drops one or more image files onto the new Image Compressor tool and gets smaller, same-format versions back — re-encoded at a chosen quality, written beside each original as `-compressed`, never overwriting the source, with a live results table showing per-image thumbnail, original→new size, and % saved — all offline and never crashing on a non-image or corrupt file.
-**Requirements**: D-01..D-10 (CONTEXT.md locked decisions), INFRA-17 (never crash), INFRA-18 (memory)
-**Depends on:** Phase 4
-**Plans:** 9/9 plans executed — ✅ COMPLETE (UAT 10/10 pass)
+**Goal:** The per-tool history feature is gone from Flint — no history panel, no per-tool history capture, no history entries in global search, no history-limit preference. Global search still works (tools only). The app builds clean, the full test suite is green, and no dead history/GRDB code or unused dependency remains. Nothing a user could reach is broken by the removal.
+**Requirements**: (removal — supersedes INFRA-13 history-limit pref, history portions of INFRA-09/10)
+**Depends on:** Phase 5
+**Rationale:** History is unused in practice; it adds surface area across every tool ViewModel (an `onSaveHistory:` closure), a GRDB-backed store, a dedicated panel, and half of the global-search path. Removing it shrinks the code, drops the GRDB dependency if nothing else needs it, and eliminates the INFRA-09 "don't leak secrets into history" hazard entirely.
+**Plans:** 7 plans
 
 Plans:
-**Wave 1**
-- [x] 05-01-PLAN.md — ImageCompressTransformer: pure ImageIO round-trip re-encode (same format in/out) + `-compressed` disambiguation + size delta + unit tests (D-02/03/05/06/07/08, INFRA-17)
 
-**Wave 2** *(blocked on 05-01)*
-- [x] 05-02-PLAN.md — ImageCompressViewModel: off-main batch loop + CompressRow + per-row progress + cancellation + history + autoreleasepool memory bound (D-01/05/09, INFRA-17/18)
+**Wave 1** *(strip per-tool history capture — parallel, disjoint tool dirs)*
+- [ ] 06-01-PLAN.md — Remove onSaveHistory/HistoryEntry from Hash, JWT, Base64, URL tools (VM + View + Definition); the INFRA-09 secret-exclusion group
+- [ ] 06-02-PLAN.md — Remove onSaveHistory/HistoryEntry from Color, NumberBase, Regex, JSON tools; delete stale GRDB comments in Color/NumberBase VMs
+- [ ] 06-03-PLAN.md — Remove onSaveHistory/HistoryEntry from UUID, Timestamp, TextDiff, Markdown, ImageCompress tools + clean ImageCompressViewModelTests (drop history-fires-once test)
 
-**Wave 3** *(blocked on 05-02)*
-- [x] 05-03-PLAN.md — ImageCompressView (multi-file drop + quality slider/presets + live results table) + Definition + ToolRegistry sanctioned-append registration + full build (D-01/04/05/09/10, INFRA-14/15/17)
+**Wave 2** *(tools-only search + app/prefs unwiring — parallel, disjoint files; blocked on Wave 1)*
+- [ ] 06-04-PLAN.md — Make global search tools-only: reduce SearchResultsMerger + SearchView (drop .historyEntry, historyResults, onSelectHistoryEntry, onShowHistory; "No tools" copy)
+- [ ] 06-05-PLAN.md — Remove app-level history wiring (FlintApp, MainWindowView), popover history nav + ⌘H shortcut (MenuBarPopoverView), and the History preference (PreferencesStore.historyLimit + PreferencesView tab)
 
-**Wave 4 — GAP CLOSURE** *(UAT Test 8: photographic PNGs barely shrink — root cause: ImageIO cannot emit indexed-color PNG)*
-- [x] 05-04-PLAN.md — GAP: pure-Swift PNG quantization engine — median-cut PNGColorQuantizer (RGBA→≤256-color palette) + IndexedPNGEncoder (color-type-3 PNG via Compression-framework zlib, PLTE/tRNS) + full unit tests, zero external deps (D-02, INFRA-17)
+**Wave 3** *(delete files + pbxproj surgery + drop GRDB; blocked on Waves 1-2)*
+- [ ] 06-06-PLAN.md — Delete the 5 history files, remove their pbxproj refs (build-file/file-ref/group/sources), and drop the GRDB package entirely (no source consumer remains)
 
-**Wave 5 — GAP CLOSURE** *(blocked on 05-04)*
-- [x] 05-05-PLAN.md — GAP: wire quantize+encode into ImageCompressTransformer PNG path (with never-larger truecolor fallback, D-06), register 3 new files in Flint.xcodeproj, transformer PNG-savings/alpha tests, full build + test suite green (D-02/05/06, INFRA-17/18) *(depends on 05-04)*
+**Wave 4** *(phase goal gate; blocked on all)*
+- [ ] 06-07-PLAN.md — No-dead-symbols grep + clean build + full test suite + human re-verify search works and tools unbroken (checkpoint:human-verify)
 
-**Wave 6 — GAP CLOSURE** *(UAT Test 5: compressed output can be LARGER than the original)*
-- [x] 05-06-PLAN.md — GAP 1: never-larger-than-ORIGINAL guard — make the original source a writable candidate on the PNG path (smallest of {original, quantized, truecolor}) AND add a post-finalize guard to the non-PNG ImageIO path; TDD failing-first tests (D-02/06, INFRA-17)
-
-**Wave 7 — GAP CLOSURE** *(UAT Tests 9 & 10, coupled; blocked on 05-06)*
-- [x] 05-07-PLAN.md — GAP 3+4: cancellable compression — cooperative Task.isCancelled checkpoint in the quantize loop + cancellation-propagating off-main work (not Task.detached, keep outer Task { } MainActor-bound per 05-02 Sendable gotcha) + resolve the in-flight .compressing row + keep Cancel visible until resolved; verify clean re-drop writes -compressed-1; slow-fixture cancellation test (D-01/09, INFRA-17/18)
-
-**Wave 8 — GAP CLOSURE** *(UAT Test 6; blocked on 05-07)*
-- [x] 05-08-PLAN.md — GAP 2: explicit "Re-compress at {n}%" button (locked Option C) — store lastSourceURLs + lastRunQuality + recompress() on the ViewModel; show button when rows non-empty AND quality changed AND not entirely lossless; no auto-spew, compress-on-drop unchanged (D-04/05)
-
-**Wave 9 — GAP CLOSURE — RE-VERIFY** *(blocked on 05-06/07/08)*
-- [x] 05-09-PLAN.md — Clean build + full test gate, then human re-test of UAT Tests 5/6/9/10 on the freshly-built binary; update 05-UAT.md (checkpoint:human-verify) — all four re-pass; follow-up fixes: cancel-leftover-file cleanup, serial work-queue accumulation (drop-while-loading), Clear button
+Surface area (from code map):
+- **Delete:** `Core/Services/HistoryStore.swift`, `Core/Models/HistoryEntry.swift`, `UI/HistoryPanelView.swift`, `UI/Components/HistoryRowView.swift`, `FlintTests/HistorySearchTests.swift`
+- **Unwind per-tool capture:** remove `onSaveHistory:`/`HistoryEntry` from every tool ViewModel + its init call site (Hash, Color, Base64, URLEncoder, UUID, Regex, NumberBase, JWT, JSONFormatter, Timestamp, TextDiff, Markdown, ImageCompress) and Definition/View wiring
+- **Search (keep, tools-only):** strip history from `UI/SearchView.swift` and `Core/Services/SearchResultsMerger.swift` (drop `.historyEntry` case, `historyResults`, `onSelectHistoryEntry`, `onShowHistory`)
+- **App wiring:** `App/FlintApp.swift`, `UI/MenuBarPopoverView.swift`, `UI/MainWindowView.swift` — remove store injection + history navigation
+- **Preferences:** remove `historyLimit` from `Core/Services/PreferencesStore.swift` (INFRA-13) and its UI in `UI/PreferencesView.swift`
+- **Dependency:** GRDB confirmed used ONLY by the two deleted files (Color/NumberBase VM "imports" are comment-only, no real `import GRDB`) → drop the GRDB package from `Flint.xcodeproj`; also remove the deleted files from the pbxproj
+- **Verify:** clean build + full `xcodebuild test` green; global search returns tools; no `History`/`GRDB` symbols remain outside `build/`
