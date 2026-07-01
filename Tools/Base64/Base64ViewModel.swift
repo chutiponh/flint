@@ -1,7 +1,6 @@
 // Tools/Base64/Base64ViewModel.swift
 // MVVM ViewModel for the Base64 Encoder/Decoder — owns debounce, auto-detect.
 // File I/O (B64-04) is button-triggered per D-10; runs off main thread via Task.detached.
-// SECURITY: Never imports GRDB.
 
 import Foundation
 import Observation

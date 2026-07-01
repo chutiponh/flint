@@ -1,6 +1,5 @@
 // Tools/URLEncoder/URLViewModel.swift
 // MVVM ViewModel for the URL Encoder/Decoder — owns debounce, parse state.
-// SECURITY: Never imports GRDB.
 
 import Foundation
 import Observation

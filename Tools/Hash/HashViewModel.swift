@@ -2,7 +2,6 @@
 // @Observable ViewModel for the Hash Generator tool.
 // SECURITY (INFRA-09, pitfall #3): HMAC key is a View-local @State.
 // It is NEVER a ViewModel property.
-// NEVER imports GRDB.
 
 import SwiftUI
 import Foundation
