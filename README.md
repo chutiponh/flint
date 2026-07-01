@@ -56,6 +56,18 @@ brew install --cask flint
 
 If Homebrew asks you to trust the tap, run `brew trust chutiponh/flint` and install again. The cask strips the quarantine flag on install, so the app opens without a Gatekeeper prompt.
 
+### With an AI coding agent
+
+Paste this prompt into Claude Code, Cursor, or any AI terminal agent:
+
+```text
+Install the Flint macOS app via Homebrew. Run:
+  brew tap chutiponh/flint
+  brew trust chutiponh/flint    # third-party tap, required once by Homebrew 6.0+
+  brew install --cask flint
+If any step fails, show me the error. When done, confirm Flint.app is in /Applications.
+```
+
 ### Manual (DMG)
 
 Download the latest `Flint-x.y.z.dmg` from [**Releases**](../../releases), open it, and drag **Flint** to Applications.
