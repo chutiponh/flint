@@ -57,8 +57,6 @@ struct MenuBarPopoverView: View {
     @Environment(ClipboardDetector.self) private var clipboard
     @Environment(PreferencesStore.self) private var prefs
     @Environment(ToolSeed.self) private var toolSeed
-    // DIST-04: Sparkle updater — started lazily from .onAppear (off cold-start path).
-    @Environment(SparkleUpdaterService.self) private var sparkle
     @Environment(\.openWindow) private var openWindow
     @Environment(\.openSettings) private var openSettings
 
@@ -185,10 +183,9 @@ struct MenuBarPopoverView: View {
             searchFocused = true
             // Start clipboard detection with the registry (called here so toolRegistry is ready)
             clipboard.start(registry: toolRegistry)
-            // DIST-04: lazily arm Sparkle here (NOT at app init) so SPUStandardUpdaterController
-            // construction stays off the cold-start critical path (RESEARCH Pitfall #6).
-            // Idempotent — guarded internally so repeated popover appearances are no-ops.
-            sparkle.start()
+            // Sparkle not armed: the unsigned/ad-hoc build cannot install updates, so starting
+            // the updater would only fire a background check that errors. Re-enable
+            // `sparkle.start()` here when shipping the signed+notarized (release.sh) build.
             installEscMonitor()
             installArrowMonitor()
             // DIST-03: first-run onboarding gate. A single synchronous UserDefaults bool read —

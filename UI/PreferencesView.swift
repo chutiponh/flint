@@ -12,7 +12,6 @@ struct PreferencesView: View {
     @Environment(PreferencesStore.self) private var prefs
     @Environment(HotkeyManager.self) private var hotkeyManager
     @Environment(HistoryStore.self) private var historyStore
-    @Environment(SparkleUpdaterService.self) private var sparkle
 
     var body: some View {
         TabView {
@@ -39,7 +38,6 @@ struct PreferencesView: View {
         .environment(prefs)
         .environment(hotkeyManager)
         .environment(historyStore)  // CR-01: propagate to HistoryPreferencesTab
-        .environment(sparkle)       // D-03: forward to GeneralPreferencesTab for update check
         .frame(minWidth: 460, minHeight: 340)
         .navigationTitle("Preferences")
         .onDisappear {
@@ -56,7 +54,6 @@ struct PreferencesView: View {
 
 private struct GeneralPreferencesTab: View {
     @Environment(PreferencesStore.self) private var prefs
-    @Environment(SparkleUpdaterService.self) private var sparkle
 
     // D-09: Accessibility permission state, two-phase UI.
     // Re-checked on view appear and on window focus (no polling) — macOS caches the
@@ -126,46 +123,11 @@ private struct GeneralPreferencesTab: View {
                 }
             }
 
-            // MARK: Updates (D-03/D-04)
-            Section("Updates") {
-                // D-03: "Check for Updates…" button triggers a real Sparkle update check.
-                // Default style (not .borderedProminent) — utility action, not a primary CTA.
-                // Disabled while checking so the user cannot double-trigger (D-04 CF-01).
-                Button("Check for Updates…") {
-                    sparkle.checkForUpdates()
-                }
-                .disabled(sparkle.updateStatus == .checking)
-                .accessibilityLabel("Check for updates")
+            // Updates: removed for the unsigned/ad-hoc distribution. Sparkle cannot install
+            // updates on a non-notarized build, so a "Check for Updates…" button would only
+            // surface a confusing error. SparkleUpdaterService still exists — re-add this
+            // section when shipping the signed+notarized (release.sh) build.
 
-                // D-04: Status display appears when a check is in progress or complete.
-                // Exact copy strings and SF Symbols from UI-SPEC § Copywriting Contract.
-                // Error uses .orange (warning severity, not data-loss red per UI-SPEC Color).
-                switch sparkle.updateStatus {
-                case .idle:
-                    EmptyView()
-                case .checking:
-                    HStack(spacing: 6) {
-                        ProgressView()
-                            .scaleEffect(0.7)
-                        Text("Checking for updates…")
-                            .foregroundStyle(.secondary)
-                            .font(.system(size: 13))
-                    }
-                case .upToDate:
-                    Label("Flint is up to date.", systemImage: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
-                        .font(.system(size: 13))
-                case .updateAvailable(let version):
-                    Label("Update available: v\(version)", systemImage: "arrow.down.circle.fill")
-                        .foregroundStyle(Color.accentColor)
-                        .font(.system(size: 13))
-                case .error(let message):
-                    Label(message, systemImage: "exclamationmark.triangle.fill")
-                        .foregroundStyle(.orange)
-                        .font(.system(size: 13))
-                        .lineLimit(3)
-                }
-            }
             // MARK: Keyboard Flow (D-09) — two-phase: grant first, then toggle.
             Section("Keyboard Flow") {
                 if hasAccessibility {

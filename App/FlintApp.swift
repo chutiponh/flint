@@ -27,10 +27,10 @@ struct FlintApp: App {
     @State private var hotkeyManager = HotkeyManager()
     @State private var toolRegistry = ToolRegistry()
     @State private var toolSeed = ToolSeed()
-    // DIST-04: Sparkle auto-update wrapper. Owned here (lifecycle-stable), but NOT started
-    // here — start() runs lazily from the popover .onAppear to keep Sparkle init off the
-    // cold-start critical path (RESEARCH Pitfall #6). No SPUStandardUpdaterController is
-    // constructed at app init.
+    // DIST-04: Sparkle auto-update wrapper. Owned + injected here but currently DORMANT —
+    // the unsigned/ad-hoc build cannot install updates, so it is neither started (popover
+    // .onAppear) nor exposed in Preferences. Kept wired so the signed+notarized build
+    // (release.sh) can re-enable it by un-commenting the two call sites.
     @State private var sparkle = SparkleUpdaterService()
     // D-09: paste-back service — isolates CGEvent ⌘V synthesis, gated on AXIsProcessTrusted.
     @State private var pasteBackService = PasteBackService()
