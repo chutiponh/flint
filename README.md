@@ -47,6 +47,17 @@ Flint lives in your menubar and opens in under a second via a global hotkey. Eve
 
 ## Install
 
+### Homebrew (recommended)
+
+```bash
+brew tap chutiponh/flint
+brew install --cask flint
+```
+
+If Homebrew asks you to trust the tap, run `brew trust chutiponh/flint` and install again. The cask strips the quarantine flag on install, so the app opens without a Gatekeeper prompt.
+
+### Manual (DMG)
+
 Download the latest `Flint-x.y.z.dmg` from [**Releases**](../../releases), open it, and drag **Flint** to Applications.
 
 > **First launch:** This build is not notarized by Apple, so macOS shows an "unverified developer" warning. Open **System Settings → Privacy & Security**, scroll down, and click **Open Anyway**. You only do this once.
