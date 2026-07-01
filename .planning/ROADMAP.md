@@ -3,7 +3,7 @@
 **Goal:** A developer drops one or more image files onto the new Image Compressor tool and gets smaller, same-format versions back — re-encoded at a chosen quality, written beside each original as `-compressed`, never overwriting the source, with a live results table showing per-image thumbnail, original→new size, and % saved — all offline and never crashing on a non-image or corrupt file.
 **Requirements**: D-01..D-10 (CONTEXT.md locked decisions), INFRA-17 (never crash), INFRA-18 (memory)
 **Depends on:** Phase 4
-**Plans:** 8/9 plans executed
+**Plans:** 9/9 plans executed — ✅ COMPLETE (UAT 10/10 pass)
 
 Plans:
 **Wave 1**
@@ -31,4 +31,4 @@ Plans:
 - [x] 05-08-PLAN.md — GAP 2: explicit "Re-compress at {n}%" button (locked Option C) — store lastSourceURLs + lastRunQuality + recompress() on the ViewModel; show button when rows non-empty AND quality changed AND not entirely lossless; no auto-spew, compress-on-drop unchanged (D-04/05)
 
 **Wave 9 — GAP CLOSURE — RE-VERIFY** *(blocked on 05-06/07/08)*
-- [ ] 05-09-PLAN.md — Clean build + full test gate, then human re-test of UAT Tests 5/6/9/10 on the freshly-built binary; update 05-UAT.md (checkpoint:human-verify)
+- [x] 05-09-PLAN.md — Clean build + full test gate, then human re-test of UAT Tests 5/6/9/10 on the freshly-built binary; update 05-UAT.md (checkpoint:human-verify) — all four re-pass; follow-up fixes: cancel-leftover-file cleanup, serial work-queue accumulation (drop-while-loading), Clear button
