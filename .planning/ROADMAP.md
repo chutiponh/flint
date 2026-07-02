@@ -4,18 +4,18 @@
 **Requirements**: (removal — supersedes INFRA-13 history-limit pref, history portions of INFRA-09/10)
 **Depends on:** Phase 5
 **Rationale:** History is unused in practice; it adds surface area across every tool ViewModel (an `onSaveHistory:` closure), a GRDB-backed store, a dedicated panel, and half of the global-search path. Removing it shrinks the code, drops the GRDB dependency if nothing else needs it, and eliminates the INFRA-09 "don't leak secrets into history" hazard entirely.
-**Plans:** 7 plans
+**Plans:** 5/7 plans executed
 
 Plans:
 
 **Wave 1** *(strip per-tool history capture — parallel, disjoint tool dirs)*
-- [ ] 06-01-PLAN.md — Remove onSaveHistory/HistoryEntry from Hash, JWT, Base64, URL tools (VM + View + Definition); the INFRA-09 secret-exclusion group
-- [ ] 06-02-PLAN.md — Remove onSaveHistory/HistoryEntry from Color, NumberBase, Regex, JSON tools; delete stale GRDB comments in Color/NumberBase VMs
-- [ ] 06-03-PLAN.md — Remove onSaveHistory/HistoryEntry from UUID, Timestamp, TextDiff, Markdown, ImageCompress tools + clean ImageCompressViewModelTests (drop history-fires-once test)
+- [x] 06-01-PLAN.md — Remove onSaveHistory/HistoryEntry from Hash, JWT, Base64, URL tools (VM + View + Definition); the INFRA-09 secret-exclusion group
+- [x] 06-02-PLAN.md — Remove onSaveHistory/HistoryEntry from Color, NumberBase, Regex, JSON tools; delete stale GRDB comments in Color/NumberBase VMs
+- [x] 06-03-PLAN.md — Remove onSaveHistory/HistoryEntry from UUID, Timestamp, TextDiff, Markdown, ImageCompress tools + clean ImageCompressViewModelTests (drop history-fires-once test)
 
 **Wave 2** *(tools-only search + app/prefs unwiring — parallel, disjoint files; blocked on Wave 1)*
-- [ ] 06-04-PLAN.md — Make global search tools-only: reduce SearchResultsMerger + SearchView (drop .historyEntry, historyResults, onSelectHistoryEntry, onShowHistory; "No tools" copy)
-- [ ] 06-05-PLAN.md — Remove app-level history wiring (FlintApp, MainWindowView), popover history nav + ⌘H shortcut (MenuBarPopoverView), and the History preference (PreferencesStore.historyLimit + PreferencesView tab)
+- [x] 06-04-PLAN.md — Make global search tools-only: reduce SearchResultsMerger + SearchView (drop .historyEntry, historyResults, onSelectHistoryEntry, onShowHistory; "No tools" copy)
+- [x] 06-05-PLAN.md — Remove app-level history wiring (FlintApp, MainWindowView), popover history nav + ⌘H shortcut (MenuBarPopoverView), and the History preference (PreferencesStore.historyLimit + PreferencesView tab)
 
 **Wave 3** *(delete files + pbxproj surgery + drop GRDB; blocked on Waves 1-2)*
 - [ ] 06-06-PLAN.md — Delete the 5 history files, remove their pbxproj refs (build-file/file-ref/group/sources), and drop the GRDB package entirely (no source consumer remains)
