@@ -83,12 +83,10 @@
 		001100000000037 /* URLViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000037 /* URLViewModel.swift */; };
 		001100000000038 /* URLView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000038 /* URLView.swift */; };
 		001100000000040 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 001200000000040 /* libz.tbd */; };
-		001100000000050 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 001300000000001 /* GRDB */; };
 		001100000000051 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = 001300000000002 /* KeyboardShortcuts */; };
 		001100000000052 /* MenuBarExtraAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 001300000000003 /* MenuBarExtraAccess */; };
 		001100000000053 /* HighlightSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 001300000000004 /* HighlightSwift */; };
 		001100000000054 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 001300000000023 /* Sparkle */; };
-		001100000000060 /* GRDB in Frameworks (Tests) */ = {isa = PBXBuildFile; productRef = 001300000000011 /* GRDB */; };
 		001100000000061 /* Data+Base64URL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000041 /* Data+Base64URL.swift */; };
 		001100000000062 /* JWTTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000042 /* JWTTransformer.swift */; };
 		001100000000063 /* JWTViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000043 /* JWTViewModel.swift */; };
@@ -266,7 +264,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				001100000000040 /* libz.tbd in Frameworks */,
-				001100000000050 /* GRDB in Frameworks */,
 				001100000000051 /* KeyboardShortcuts in Frameworks */,
 				001100000000052 /* MenuBarExtraAccess in Frameworks */,
 				001100000000053 /* HighlightSwift in Frameworks */,
@@ -281,7 +278,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				001100000000060 /* GRDB in Frameworks (Tests) */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -641,7 +637,6 @@
 			);
 			name = Flint;
 			packageProductDependencies = (
-				001300000000001 /* GRDB */,
 				001300000000002 /* KeyboardShortcuts */,
 				001300000000003 /* MenuBarExtraAccess */,
 				001300000000004 /* HighlightSwift */,
@@ -668,7 +663,6 @@
 			);
 			name = FlintTests;
 			packageProductDependencies = (
-				001300000000011 /* GRDB */,
 			);
 			productName = FlintTests;
 			productReference = 001200000000091 /* FlintTests.xctest */;
@@ -703,7 +697,6 @@
 			);
 			mainGroup = 001500000000099;
 			packageReferences = (
-				001B00000000001 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
 				001B00000000002 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */,
 				001B00000000003 /* XCRemoteSwiftPackageReference "MenuBarExtraAccess" */,
 				001B00000000004 /* XCRemoteSwiftPackageReference "HighlightSwift" */,
@@ -1122,14 +1115,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		001B00000000001 /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/groue/GRDB.swift.git";
-			requirement = {
-				kind = exactVersion;
-				version = "7.11.1";
-			};
-		};
 		001B00000000002 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/sindresorhus/KeyboardShortcuts";
@@ -1189,11 +1174,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		001300000000001 /* GRDB */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 001B00000000001 /* XCRemoteSwiftPackageReference "GRDB.swift" */;
-			productName = GRDB;
-		};
 		001300000000002 /* KeyboardShortcuts */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 001B00000000002 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */;
@@ -1208,11 +1188,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 001B00000000004 /* XCRemoteSwiftPackageReference "HighlightSwift" */;
 			productName = HighlightSwift;
-		};
-		001300000000011 /* GRDB */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 001B00000000001 /* XCRemoteSwiftPackageReference "GRDB.swift" */;
-			productName = GRDB;
 		};
 		001300000000005 /* UUIDv7 */ = {
 			isa = XCSwiftPackageProductDependency;
