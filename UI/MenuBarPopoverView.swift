@@ -129,7 +129,7 @@ struct MenuBarPopoverView: View {
             bodyContent
         }
         .frame(width: 480, height: 600, alignment: .top)
-        .background(Color(NSColor.windowBackgroundColor))
+        .background(Color.graphite950)
         // DIST-02 (D-04): launcher drop — read file text, run detect(), route to best tool;
         // no-match stages the text in the search field (mirrors Services D-03). Binary/oversized
         // is rejected post-drop via WarningBannerView (D-06).
@@ -370,12 +370,13 @@ struct MenuBarPopoverView: View {
     private var searchBar: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.secondary)
+                .foregroundColor(.ash)
                 .accessibilityHidden(true)
 
             TextField("Search tools…", text: $searchText)
                 .textFieldStyle(.plain)
-                .font(.system(size: 15))
+                .font(.monoSearch)
+                .foregroundColor(.chalk)
                 .focused($searchFocused)
                 .accessibilityLabel("Search tools")
                 .onSubmit {
@@ -394,7 +395,7 @@ struct MenuBarPopoverView: View {
             if !searchText.isEmpty {
                 Button(action: { searchText = "" }) {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.ash)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Clear search")
@@ -409,7 +410,7 @@ struct MenuBarPopoverView: View {
                 clipboard.isPopoverPresented = false
             } label: {
                 Image(systemName: "macwindow")
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.ash)
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Open Flint in a resizable window to drag and drop files")
@@ -420,12 +421,22 @@ struct MenuBarPopoverView: View {
                 openPreferences()
             } label: {
                 Image(systemName: "gearshape")
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.ash)
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Open Preferences")
             .help("Preferences (⌘,)")
         }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: Radius.control)
+                .fill(Color.graphite950)
+                .overlay(
+                    RoundedRectangle(cornerRadius: Radius.control)
+                        .strokeBorder(searchFocused ? Color.spark : Color.graphite800, lineWidth: searchFocused ? 2 : 1)
+                )
+        )
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
     }
