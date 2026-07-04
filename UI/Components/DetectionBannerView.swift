@@ -14,11 +14,11 @@ struct DetectionBannerView: View {
         HStack(spacing: 8) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Detected: \(result.toolName)")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.primary)
+                    .font(.monoLabel)
+                    .foregroundColor(.chalk)
                 Text("Open \(result.toolName)?")
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.ash)
             }
 
             Spacer()
@@ -26,26 +26,34 @@ struct DetectionBannerView: View {
             Button("Open \(result.toolName)") {
                 onAccept()
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.plain)
             .controlSize(.small)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(
+                RoundedRectangle(cornerRadius: Radius.chip)
+                    .fill(Color.spark)
+            )
+            .foregroundColor(.graphite950)
+            .font(.system(size: 12, weight: .semibold))
             .accessibilityLabel("Open \(result.toolName)")
 
             Button("Dismiss") {
                 onDismiss()
             }
             .buttonStyle(.plain)
-            .foregroundColor(.secondary)
+            .foregroundColor(.ash)
             .controlSize(.small)
             .accessibilityLabel("Dismiss detection")
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color(NSColor.controlBackgroundColor))
+            RoundedRectangle(cornerRadius: Radius.control)
+                .fill(Color.sparkGlow)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color(NSColor.separatorColor), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: Radius.control)
+                        .stroke(Color.spark, lineWidth: 1)
                 )
         )
         .accessibilityElement(children: .combine)

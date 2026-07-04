@@ -6,7 +6,7 @@
 // Design: 04-UI-SPEC.md § "All-Tools Grid — D-01"
 // Pattern: UI/Components/PinnedToolBarView.swift (registry iteration + hover tile pattern)
 // Accessibility: .accessibilityLabel(tool.name) + .accessibilityHint("Open \(tool.name)")
-// Colors: semantic only (INFRA-14) — .accentColor, .quaternary, .primary
+// Colors: DesignSystem tokens (graphite/ash/spark/chalk) — see Core/DesignSystem.swift
 
 import SwiftUI
 
@@ -38,10 +38,10 @@ struct AllToolsGridView: View {
                 VStack(spacing: 8) {
                     Image(systemName: "magnifyingglass")
                         .font(.system(size: 28))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.ash)
                     Text("No tools matching \"\(filter)\"")
                         .font(.system(size: 13))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.ash)
                         .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity)
@@ -73,17 +73,20 @@ private struct ToolGridTile: View {
     let onSelect: (String) -> Void
 
     @State private var isHovered: Bool = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var isHighlighted: Bool { isSelected || isHovered }
 
     var body: some View {
         Button(action: { onSelect(tool.id) }) {
             VStack(spacing: 6) {
                 Image(systemName: tool.sfSymbol)
                     .font(.system(size: 20))
-                    .foregroundColor(.accentColor)
+                    .foregroundColor(isHighlighted ? .spark : .ash)
 
                 Text(tool.name)
                     .font(.system(size: 11))
-                    .foregroundColor(.primary)
+                    .foregroundColor(.chalk)
                     .lineLimit(2)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity) // ponytail: width fills column; height fixed by tile frame below
@@ -92,24 +95,27 @@ private struct ToolGridTile: View {
             .frame(height: 72) // equal-size tiles regardless of label length
             .padding(.horizontal, 4)
             .background(
-                // Selected: accent tint. Hover: brighter quaternary. Otherwise: quaternary.
-                isSelected
-                    ? Color.accentColor.opacity(0.20)
-                    : Color(NSColor.quaternaryLabelColor).opacity(isHovered ? 1.0 : 0.6)
+                // Selected/hover: graphite850. Otherwise: graphite900.
+                isHighlighted ? Color.graphite850 : Color.graphite900
             )
-            .cornerRadius(8)
+            .cornerRadius(Radius.card)
             .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .strokeBorder(Color.accentColor, lineWidth: isSelected ? 2 : 0)
+                RoundedRectangle(cornerRadius: Radius.card)
+                    .strokeBorder(isHighlighted ? Color.spark : Color.graphite800, lineWidth: isHighlighted ? 1.5 : 1)
             )
+            .offset(y: (isHighlighted && !reduceMotion) ? -1.5 : 0)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(tool.name)
         .accessibilityHint("Open \(tool.name)")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
         .onHover { hovered in
-            withAnimation(.easeInOut(duration: 0.1)) {
+            if reduceMotion {
                 isHovered = hovered
+            } else {
+                withAnimation(.easeInOut(duration: 0.1)) {
+                    isHovered = hovered
+                }
             }
         }
     }

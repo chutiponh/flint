@@ -75,11 +75,11 @@ struct SearchView: View {
             Spacer()
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 36))
-                .foregroundColor(.secondary)
+                .foregroundColor(.ash)
             // UI-SPEC Copywriting: "No tools matching '[query]'"
             Text("No tools matching \"\(query)\"")
                 .font(.headline)
-                .foregroundColor(.secondary)
+                .foregroundColor(.ash)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
             Spacer()
@@ -131,20 +131,21 @@ private struct SearchToolRow: View {
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: tool.sfSymbol)
-                .foregroundColor(.accentColor)
+                .foregroundColor(isSelected ? .spark : .ash)
                 .frame(width: 24)
             VStack(alignment: .leading, spacing: 2) {
                 Text(tool.name)
                     .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.chalk)
                 Text(tool.category.displayName)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.ashDim)
             }
             Spacer()
         }
         .padding(.vertical, 4)
-        .background(isSelected ? Color.accentColor.opacity(0.12) : .clear)
-        .cornerRadius(4)
+        .background(isSelected ? Color.graphite850 : .clear)
+        .cornerRadius(Radius.chip)
         .accessibilityLabel(tool.name)
     }
 }

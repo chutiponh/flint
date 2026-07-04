@@ -98,6 +98,7 @@
 		001100000000073 /* TimestampView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000073 /* TimestampView.swift */; };
 		001100000000074 /* TimestampTransformerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000074 /* TimestampTransformerTests.swift */; };
 		001100000000081 /* Array+HexString.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000081 /* Array+HexString.swift */; };
+		001100000000MGN /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000MGN /* DesignSystem.swift */; };
 		001100000000082 /* HashTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000082 /* HashTransformer.swift */; };
 		001100000000083 /* HashViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000083 /* HashViewModel.swift */; };
 		001100000000084 /* HashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000084 /* HashView.swift */; };
@@ -194,6 +195,7 @@
 		001200000000073 /* TimestampView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimestampView.swift; sourceTree = "<group>"; };
 		001200000000074 /* TimestampTransformerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimestampTransformerTests.swift; sourceTree = "<group>"; };
 		001200000000081 /* Array+HexString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+HexString.swift"; sourceTree = "<group>"; };
+		001200000000MGN /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 		001200000000082 /* HashTransformer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HashTransformer.swift; sourceTree = "<group>"; };
 		001200000000083 /* HashViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HashViewModel.swift; sourceTree = "<group>"; };
 		001200000000084 /* HashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HashView.swift; sourceTree = "<group>"; };
@@ -316,6 +318,7 @@
 				001500000000004 /* Models */,
 				001500000000005 /* Services */,
 				001500000000006 /* Extensions */,
+				001200000000MGN /* DesignSystem.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -777,6 +780,7 @@
 				001100000000072 /* TimestampViewModel.swift in Sources */,
 				001100000000073 /* TimestampView.swift in Sources */,
 				001100000000081 /* Array+HexString.swift in Sources */,
+				001100000000MGN /* DesignSystem.swift in Sources */,
 				001100000000082 /* HashTransformer.swift in Sources */,
 				001100000000083 /* HashViewModel.swift in Sources */,
 				001100000000084 /* HashView.swift in Sources */,
