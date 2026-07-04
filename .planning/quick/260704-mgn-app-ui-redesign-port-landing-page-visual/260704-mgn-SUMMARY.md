@@ -123,3 +123,27 @@ These 10 tools still inherit the new look through `ToolHeaderView`, `CodeDisplay
 ## Self-Check: PASSED
 
 All 11 created/modified source files confirmed present on disk; all 3 task commit hashes (`10a8725`, `63172cb`, `394907c`) confirmed present in `git log`.
+
+## Task 4 — Tool-view sweep (follow-up)
+
+Swept all 10 files listed under "Follow-up Candidates" above, replacing local hardcoded stock system colors with `DesignSystem` tokens, following the exact substitution pattern used in `Tools/JWT/JWTView.swift`. One atomic commit, build green.
+
+**Substitutions applied:**
+
+- **`Tools/Base64/Base64View.swift`** — `.accentColor` on the "Copy Output" tap-text link → `.spark`; `.orange` icon/text on the file-operation error banner → `.warningText`.
+- **`Tools/Color/ColorView.swift`** — WCAG `PASS`/`FAIL` badge color (`Color.green`/`Color.red`) → `Color.success`/`Color.errorText`. This is a UI-state indicator (pass/fail), not user color data, so it was in scope per the task's carve-out.
+- **`Tools/Color/ColorTransformer.swift`** and **`Tools/Color/ColorViewModel.swift`** — **no changes**. Both are pure color-math / state layers with zero SwiftUI color literals; their only `red:`/`green:`/`blue:` occurrences are RGBA component argument labels passed to `SwiftUI.Color(red:green:blue:opacity:)` to render the user's actual color value — exactly the "user-data display" exception called out in the task, left untouched.
+- **`Tools/Hash/HashView.swift`** — `.red` foregroundStyle on the file-hash "Cancel" button → `.errorText` (qualified as `Color.errorText`, not `.errorText`, to avoid the known `ShapeStyle` static-member-lookup pitfall documented in the original plan's Deviation #3 — `.foregroundStyle(.token)` doesn't resolve custom `Color` extension members, only `.foregroundColor(.token)` does).
+- **`Tools/ImageCompress/ImageCompressView.swift`** — `.red` on the compression "Cancel" button → `.errorText`; `Color.green` on the "−N% saved" indicator → `Color.success`.
+- **`Tools/JSONFormatter/JSONFormatterView.swift`** — `.accentColor` on "Copy Output" link → `.spark`.
+- **`Tools/TextDiff/TextDiffView.swift`** — the diff-highlight semantic case called out explicitly in the task: added-line background/prefix (`Color.green` variants) → `Color.success`; removed-line background/prefix (`Color.red` variants) → `Color.errorText`, applied consistently across `UnifiedDiffRow`, `SideBySideRow`, and the word-level `WordSegmentsView` inline highlight (`.opacity(0.40)` insert/delete tints). `.accentColor` on the "Copy Patch" link → `.spark`. Updated the stale doc-comment above `WordSegmentsView` that still referenced literal `green`/`red`.
+- **`Tools/Timestamp/TimestampView.swift`** — `.yellow.opacity(0.1)` background on the ambiguous-timestamp-unit banner → `Color.warningText.opacity(0.1)`.
+- **`Tools/URLEncoder/URLView.swift`** — two `.accentColor` "Copy Output" links (encode/decode mode and parse-mode rebuilt-URL row) → `.spark`; `.red` delete-button icon on the query-parameter row → `.errorText`.
+
+**Not touched (out of scope for this task):** `.accentColor` usages in `UI/OnboardingWindowView.swift`, `UI/Components/PinnedToolBarView.swift`, `UI/Components/BitFieldView.swift`, and `UI/Components/DropOverlayView.swift` — none of these are in the assigned 10-file list; left for a separate follow-up if desired.
+
+**Verification:**
+- `xcodebuild -project Flint.xcodeproj -scheme Flint build` → **BUILD SUCCEEDED** (one iteration required: `.foregroundStyle(.errorText)` in `HashView.swift` hit the same `ShapeStyle`-lookup compile error as the original JWTView deviation; fixed by qualifying as `Color.errorText`).
+- `grep -rnE "\.foregroundColor\(\.(red|green|blue|orange|yellow)\)|Color\.(red|green|blue|orange|yellow)|\.accentColor" Tools/ UI/` — remaining hits are all either (a) the four out-of-scope UI/ files above, or (b) `Color(red:green:blue:...)` constructor argument labels in `ColorView.swift`/`ColorViewModel.swift` rendering actual user color data. No unjustified hits remain in the 10 assigned tool views.
+
+**Commit:** `8d369f4` — `feat(ui): sweep remaining tool views to DesignSystem tokens` (one atomic commit, 8 files changed).

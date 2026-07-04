@@ -140,7 +140,7 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260627-lef | Remove the Open in Flint macOS Services feature (DIST-01, plan 03-01) | 2026-06-27 | 19fee45 | [260627-lef-remove-the-open-in-flint-macos-services-](./quick/260627-lef-remove-the-open-in-flint-macos-services-/) |
-| 260704-mgn | App UI redesign: port landing page visual identity into SwiftUI app via DesignSystem.swift tokens | 2026-07-04 | 394907c | [260704-mgn-app-ui-redesign-port-landing-page-visual](./quick/260704-mgn-app-ui-redesign-port-landing-page-visual/) |
+| 260704-mgn | App UI redesign: port landing page visual identity into SwiftUI app via DesignSystem.swift tokens | 2026-07-04 | 8d369f4 | [260704-mgn-app-ui-redesign-port-landing-page-visual](./quick/260704-mgn-app-ui-redesign-port-landing-page-visual/) |
 
 ## Deferred Items
 
