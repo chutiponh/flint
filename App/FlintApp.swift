@@ -34,6 +34,20 @@ struct FlintApp: App {
     // D-09: paste-back service — isolates CGEvent ⌘V synthesis, gated on AXIsProcessTrusted.
     @State private var pasteBackService = PasteBackService()
 
+    init() {
+        // INFRA-09 / phase-6 T-03: builds prior to the history removal persisted raw tool
+        // input/output (potentially secrets) to <AppSupport>/Flint/history.db. Deleting the
+        // feature's code did not delete that file, so remove it (and SQLite sidecars) here.
+        if let appSupport = try? FileManager.default.url(for: .applicationSupportDirectory,
+                                                         in: .userDomainMask,
+                                                         appropriateFor: nil, create: false) {
+            let flintDir = appSupport.appendingPathComponent("Flint", isDirectory: true)
+            for name in ["history.db", "history.db-wal", "history.db-shm"] {
+                try? FileManager.default.removeItem(at: flintDir.appendingPathComponent(name))
+            }
+        }
+    }
+
     var body: some Scene {
         // MARK: - MenuBar Popover
         // MenuBarExtraAccess must be applied before .menuBarExtraStyle (extension on MenuBarExtra)
