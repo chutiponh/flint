@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: milestone_complete
-stopped_at: Milestone complete (Phase 06 was final phase)
-last_updated: 2026-07-04T08:58:34.588Z
-last_activity: 2026-07-04 -- Phase 06 execution started
+stopped_at: Milestone complete; v0.1.2 released (GitHub Release + Homebrew cask + CI automation)
+last_updated: 2026-07-07T08:20:00.000Z
+last_activity: 2026-07-07 -- Released v0.1.2 (UI redesign), automated release CI, bumped brew cask
 progress:
   total_phases: 1
   completed_phases: 0
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-06-25)
 Phase: 06
 Plan: Not started
 Status: Milestone complete
-Last activity: 2026-07-04 - Completed quick task 260704-mgn: App UI redesign (DesignSystem.swift + launcher + detail views)
+Last activity: 2026-07-07 - Released v0.1.2 (UI redesign shipped): GitHub Release + Flint-0.1.2.dmg, CI now auto-builds+releases+bumps brew on version change to main, Homebrew cask at 0.1.2
 
 Progress: [██████████] 98%
 
@@ -141,6 +141,7 @@ None yet.
 |---|-------------|------|--------|-----------|
 | 260627-lef | Remove the Open in Flint macOS Services feature (DIST-01, plan 03-01) | 2026-06-27 | 19fee45 | [260627-lef-remove-the-open-in-flint-macos-services-](./quick/260627-lef-remove-the-open-in-flint-macos-services-/) |
 | 260704-mgn | App UI redesign: port landing page visual identity into SwiftUI app via DesignSystem.swift tokens | 2026-07-04 | 8d369f4 | [260704-mgn-app-ui-redesign-port-landing-page-visual](./quick/260704-mgn-app-ui-redesign-port-landing-page-visual/) |
+| 260707-rel | Release v0.1.2 (UI redesign): bump MARKETING_VERSION, GitHub Release + Flint-0.1.2.dmg, automate release CI (push-to-main → build+release+cask on version change), bump Homebrew cask to 0.1.2 | 2026-07-07 | 50e4318 | — |
 
 ## Deferred Items
 
@@ -155,6 +156,6 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-06-30T18:15:25.090Z
-Stopped at: Completed 05-07-PLAN.md
+Last session: 2026-07-07T08:20:00.000Z
+Stopped at: v0.1.2 released — GitHub Release + Homebrew cask live; release CI automated on push-to-main
 Resume file: None
