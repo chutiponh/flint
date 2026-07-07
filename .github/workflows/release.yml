@@ -1,42 +1,94 @@
 name: Release (free / unsigned DMG)
 
-# Push a tag like v0.1.2 → build the unsigned/ad-hoc DMG, publish a GitHub
-# Release with it attached, then bump the Homebrew cask in the tap. No Apple
-# secrets needed (ad-hoc signing requires no certificate). For the
-# signed+notarized pipeline, add cert/notary secrets and run scripts/release.sh.
+# Push to main → if MARKETING_VERSION differs from the latest published release,
+# tag it, build the unsigned/ad-hoc DMG, publish a GitHub Release, and bump the
+# Homebrew cask. Unchanged version → skip (no wasted Xcode build on docs commits).
 #
-# workflow_dispatch is kept as a manual fallback (supply the version explicitly).
+# No Apple secrets needed (ad-hoc signing requires no certificate). For the
+# signed+notarized pipeline, add cert/notary secrets and run scripts/release.sh.
+# workflow_dispatch stays as a manual fallback (force a build for a given version).
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       version:
-        description: "Version for the DMG + release tag (e.g. 0.1.0)"
+        description: "Force a release for this version (e.g. 0.1.0)"
         required: true
         type: string
 
+# Least privilege: the default GITHUB_TOKEN may write ONLY this repo's contents
+# (tags + releases). It structurally cannot push to the tap repo — that needs the
+# separate TAP_TOKEN secret. Anything not listed here defaults to no access.
 permissions:
-  contents: write   # needed to create the GitHub Release
+  contents: write
+
+# Don't let two main pushes race on the same tag/release.
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
+  # Decide whether a release is needed and what version it is. Cheap; no build.
+  decide:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      should_release: ${{ steps.v.outputs.should_release }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # need tags to compare against
+
+      - name: Resolve version and decide
+        id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [ -n "${{ inputs.version }}" ]; then
+            V="${{ inputs.version }}"
+            echo "Manual dispatch → force release of $V"
+            echo "version=$V" >> "$GITHUB_OUTPUT"
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Read MARKETING_VERSION straight from the pbxproj (all configs share it).
+          V="$(grep -m1 -E 'MARKETING_VERSION = ' Flint.xcodeproj/project.pbxproj \
+                | sed -E 's/.*MARKETING_VERSION = ([^;]+);.*/\1/' | tr -d ' ')"
+          echo "MARKETING_VERSION = $V"
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          # Release only if no GitHub Release exists for this version yet.
+          if gh release view "v$V" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release v$V already exists → skip."
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "No release for v$V → build it."
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+          fi
+
   build:
+    needs: decide
+    if: needs.decide.outputs.should_release == 'true'
     runs-on: macos-latest
+    env:
+      VERSION: ${{ needs.decide.outputs.version }}
     steps:
       - uses: actions/checkout@v4
 
-      # Version comes from the pushed tag (strip leading "v"), or the manual input.
-      - name: Resolve version
-        id: ver
+      # Tag the release commit if the tag doesn't already exist.
+      - name: Ensure tag
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          if [ -n "${{ inputs.version }}" ]; then
-            V="${{ inputs.version }}"
+          set -euo pipefail
+          if git ls-remote --exit-code --tags origin "refs/tags/v${VERSION}" >/dev/null 2>&1; then
+            echo "Tag v${VERSION} already exists."
           else
-            V="${GITHUB_REF_NAME#v}"
+            git tag -a "v${VERSION}" -m "Flint ${VERSION}"
+            git push origin "v${VERSION}"
           fi
-          echo "version=$V" >> "$GITHUB_OUTPUT"
-          echo "Version: $V"
 
       # KeyboardShortcuts 3.0.1 needs Swift tools 6.2, so pick the newest installed
       # Xcode (not the default, which may be an older Swift 6.1 toolchain).
@@ -49,27 +101,28 @@ jobs:
           swift --version
 
       - name: Build unsigned DMG
-        run: bash scripts/release-free.sh "${{ steps.ver.outputs.version }}"
+        run: bash scripts/release-free.sh "${VERSION}"
 
       - name: Upload DMG artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Flint-${{ steps.ver.outputs.version }}-dmg
+          name: Flint-${{ env.VERSION }}-dmg
           path: dist/*.dmg
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.ver.outputs.version }}
-          name: Flint ${{ steps.ver.outputs.version }}
+          tag_name: v${{ env.VERSION }}
+          name: Flint ${{ env.VERSION }}
           files: dist/*.dmg
           body: |
             Unsigned build — see the README for install steps
             (System Settings → Privacy & Security → Open Anyway).
 
       # Bump the cask in chutiponh/homebrew-flint. Needs a PAT with write access
-      # to the tap repo (default GITHUB_TOKEN can't push to another repo).
+      # to the tap repo (default GITHUB_TOKEN can't push cross-repo). If TAP_TOKEN
+      # is unset the step fails loudly rather than silently skipping the bump.
       - name: Bump Homebrew cask
         env:
           GH_TOKEN: ${{ secrets.TAP_TOKEN }}
-        run: bash scripts/update-cask.sh "${{ steps.ver.outputs.version }}"
+        run: bash scripts/update-cask.sh "${VERSION}"

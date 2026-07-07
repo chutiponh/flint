@@ -24,9 +24,14 @@ SHA="$(shasum -a 256 "${TMP}/Flint.dmg" | awk '{print $1}')"
 echo "  sha256: ${SHA}"
 
 echo "▶ Cloning tap ${TAP}"
-# In CI, GH_TOKEN carries write access to the tap repo (default GITHUB_TOKEN
-# can't push cross-repo). Locally, GH_TOKEN is unset and the credential helper
-# handles auth via plain HTTPS.
+# In CI, GH_TOKEN must carry write access to the tap repo — the default
+# GITHUB_TOKEN cannot push cross-repo. Refuse to proceed without it rather than
+# fall back to a token that will fail confusingly at push time.
+if [[ -n "${CI:-}" && -z "${GH_TOKEN:-}" ]]; then
+  echo "❌ GH_TOKEN not set in CI — set the TAP_TOKEN secret (PAT with write on ${TAP})." >&2
+  exit 1
+fi
+# Locally, GH_TOKEN is optional: unset → the credential helper handles auth.
 if [[ -n "${GH_TOKEN:-}" ]]; then
   CLONE_URL="https://x-access-token:${GH_TOKEN}@github.com/${TAP}.git"
 else
