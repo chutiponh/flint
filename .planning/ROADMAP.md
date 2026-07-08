@@ -37,7 +37,7 @@ Surface area (from code map):
 **Goal:** After choosing a color via the eyedropper (NSColorSampler) or the system ColorPicker (NSColorPanel), the popover currently loses key focus and dismisses. Keep it open — or re-present it — so the picked color lands in the Color tool and the user can copy any format and keep working.
 **Requirements**: PHASE-07-GOAL (popover survives both color pickers), CLR-02
 **Depends on:** Phase 6
-**Plans:** 1 plan
+**Plans:** 0/1 plans complete
 
 Plans:
-- [ ] 07-01-PLAN.md — Eyedropper re-present + NSColorPanel falling-edge watchdog (both pickers keep the popover usable, D-04) + manual UAT gate
+- [ ] 07-01-PLAN.md — Eyedropper re-present + NSColorPanel falling-edge watchdog (both pickers keep the popover usable, D-04) + paste-back-dismiss guard + manual UAT gate
