@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: milestone_complete
-stopped_at: Milestone complete; v0.1.2 released (GitHub Release + Homebrew cask + CI automation)
-last_updated: 2026-07-07T08:20:00.000Z
-last_activity: 2026-07-07 -- Released v0.1.2 (UI redesign), automated release CI, bumped brew cask
+status: completed
+stopped_at: Phase 7 context gathered
+last_updated: "2026-07-08T03:19:28.069Z"
+last_activity: "2026-07-07 - Released v0.1.2 (UI redesign shipped): GitHub Release + Flint-0.1.2.dmg, CI now auto-builds+releases+bumps brew on version change to main, Homebrew cask at 0.1.2"
 progress:
-  total_phases: 1
-  completed_phases: 0
+  total_phases: 2
+  completed_phases: 1
   total_plans: 7
-  completed_plans: 47
-  percent: 0
+  completed_plans: 7
+  percent: 50
 ---
 
 # Project State
@@ -125,6 +125,7 @@ Recent decisions affecting current work:
 ### Roadmap Evolution
 
 - Phase 5 added: add image compression feature
+- Phase 7 added: keep menubar popover open after color picker use
 
 ### Pending Todos
 
@@ -156,6 +157,6 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-07-07T08:20:00.000Z
-Stopped at: v0.1.2 released — GitHub Release + Homebrew cask live; release CI automated on push-to-main
-Resume file: None
+Last session: 2026-07-08T03:19:28.060Z
+Stopped at: Phase 7 context gathered
+Resume file: .planning/phases/07-keep-menubar-popover-open-after-color-picker-use-after-choos/07-CONTEXT.md
