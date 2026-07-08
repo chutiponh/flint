@@ -233,6 +233,9 @@ private struct ColorContentView: View {
             NSPasteboard.general.setString(text, forType: .string)
             if prefs.pasteBackEnabled, AXIsProcessTrusted(),
                let app = hotkeyManager.previousFrontmostApp {
+                // D-04 watchdog yields: close the ColorPanel first so isVisible flips to
+                // false before the popover dismiss, otherwise the watchdog re-opens it.
+                NSColorPanel.shared.close()
                 clipboard.isPopoverPresented = false
                 pasteBackService.synthesizePaste(into: app)
             }
