@@ -42,6 +42,7 @@
 		001100000005006 /* BitFieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000005006 /* BitFieldView.swift */; };
 		001100000000001 /* FlintApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000001 /* FlintApp.swift */; };
 		001100000000002 /* WindowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001200000000002 /* WindowCoordinator.swift */; };
+		0011000000000FF1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000000FF1 /* AppDelegate.swift */; };
 		0011000000000B3 /* SparkleUpdaterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0012000000000B3 /* SparkleUpdaterService.swift */; };
 		00110000000DD07 /* PasteBackService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00120000000DD07 /* PasteBackService.swift */; };
 		00110000000DD01 /* DropOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00120000000DD01 /* DropOverlayView.swift */; };
@@ -137,6 +138,7 @@
 /* Begin PBXFileReference section */
 		001200000000001 /* FlintApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlintApp.swift; sourceTree = "<group>"; };
 		001200000000002 /* WindowCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowCoordinator.swift; sourceTree = "<group>"; };
+		0012000000000FF1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0012000000000B3 /* SparkleUpdaterService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SparkleUpdaterService.swift; sourceTree = "<group>"; };
 		00120000000DD07 /* PasteBackService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteBackService.swift; sourceTree = "<group>"; };
 		00120000000DD01 /* DropOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropOverlayView.swift; sourceTree = "<group>"; };
@@ -308,6 +310,7 @@
 			children = (
 				001200000000001 /* FlintApp.swift */,
 				001200000000002 /* WindowCoordinator.swift */,
+				0012000000000FF1 /* AppDelegate.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -737,6 +740,7 @@
 			files = (
 				001100000000001 /* FlintApp.swift in Sources */,
 				001100000000002 /* WindowCoordinator.swift in Sources */,
+				0011000000000FF1 /* AppDelegate.swift in Sources */,
 				0011000000000B3 /* SparkleUpdaterService.swift in Sources */,
 				00110000000DD07 /* PasteBackService.swift in Sources */,
 				00110000000DD01 /* DropOverlayView.swift in Sources */,
@@ -1009,7 +1013,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.1.2;
+				MARKETING_VERSION = 0.1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "dev.chutipon.flint";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -1038,7 +1042,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.1.2;
+				MARKETING_VERSION = 0.1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "dev.chutipon.flint";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -1058,7 +1062,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.1.2;
+				MARKETING_VERSION = 0.1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "dev.chutipon.flint.tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -1076,7 +1080,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.1.2;
+				MARKETING_VERSION = 0.1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "dev.chutipon.flint.tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;

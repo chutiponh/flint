@@ -21,9 +21,10 @@ struct FlintApp: App {
     // DIST-03: open the onboarding WindowGroup by id when WindowCoordinator posts .openOnboarding.
     @Environment(\.openWindow) private var openWindow
 
+    // AppDelegate owns clipboard + hotkeyManager so they exist at launch (see AppDelegate.swift).
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+
     @State private var prefs = PreferencesStore()
-    @State private var clipboard = ClipboardDetector()
-    @State private var hotkeyManager = HotkeyManager()
     @State private var toolRegistry = ToolRegistry()
     @State private var toolSeed = ToolSeed()
     // DIST-04: Sparkle auto-update wrapper. Owned + injected here but currently DORMANT —
@@ -54,11 +55,11 @@ struct FlintApp: App {
         MenuBarExtra("Flint", systemImage: "wrench.and.screwdriver") {
             MenuBarPopoverView()
                 .environment(prefs)
-                .environment(clipboard)
+                .environment(appDelegate.clipboard)
                 .environment(toolRegistry)
                 .environment(toolSeed)
                 .environment(sparkle)  // DIST-04: lazy-started from popover .onAppear
-                .environment(hotkeyManager)  // D-09: tool observers read previousFrontmostApp
+                .environment(appDelegate.hotkeyManager)  // D-09: tool observers read previousFrontmostApp
                 .environment(pasteBackService)  // D-09: synthesizes ⌘V into previously-focused app
                 .preferredColorScheme(prefs.theme.colorScheme)  // INFRA-14 live theme
                 // DIST-03: WindowCoordinator.openOnboarding() posts .openOnboarding after the
@@ -69,17 +70,20 @@ struct FlintApp: App {
                     openWindow(id: "onboarding")
                 }
         }
-        .menuBarExtraAccess(isPresented: $clipboard.isPopoverPresented)
+        .menuBarExtraAccess(isPresented: Binding(
+            get: { appDelegate.clipboard.isPopoverPresented },
+            set: { appDelegate.clipboard.isPopoverPresented = $0 }
+        ))
         .menuBarExtraStyle(.window)
 
         // MARK: - Detachable Workspace Window (INFRA-02)
         WindowGroup(id: "workspace") {
             MainWindowView()
                 .environment(prefs)
-                .environment(clipboard)
+                .environment(appDelegate.clipboard)
                 .environment(toolRegistry)
                 .environment(toolSeed)
-                .environment(hotkeyManager)     // D-09: tool views read previousFrontmostApp
+                .environment(appDelegate.hotkeyManager)     // D-09: tool views read previousFrontmostApp
                 .environment(pasteBackService)  // D-09: tool views call synthesizePaste
                 .preferredColorScheme(prefs.theme.colorScheme)  // INFRA-14
         }
@@ -105,7 +109,7 @@ struct FlintApp: App {
         Settings {
             PreferencesView()
                 .environment(prefs)
-                .environment(hotkeyManager)
+                .environment(appDelegate.hotkeyManager)
                 .environment(sparkle)        // 04-02: PreferencesView's Updates section reads SparkleUpdaterService
                 .preferredColorScheme(prefs.theme.colorScheme)  // INFRA-14
         }

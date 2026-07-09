@@ -27,7 +27,10 @@ final class HotkeyManager {
     // NSRunningApplication cannot be weak-referenced; store as a regular optional.
     private(set) var previousFrontmostApp: NSRunningApplication?
 
-    init() {
+    /// Register the global hotkey. Called from AppDelegate.applicationDidFinishLaunching so it
+    /// runs at launch — NOT lazily from init when the MenuBarExtra content first renders, which
+    /// left the hotkey dead until the first manual menubar click.
+    func registerHotkey() {
         // Register hotkey — fires NotificationCenter so any subscriber can respond
         // KeyboardShortcuts.onKeyDown is @MainActor-isolated in v3.0.1
         KeyboardShortcuts.onKeyDown(for: .openFlint) { [self] in

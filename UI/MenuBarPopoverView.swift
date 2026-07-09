@@ -197,10 +197,9 @@ struct MenuBarPopoverView: View {
             removeEscMonitor()
             removeArrowMonitor()
         }
-        // Handle hotkey notification (show popover)
-        .onReceive(NotificationCenter.default.publisher(for: .showPopover)) { _ in
-            clipboard.isPopoverPresented = true
-        }
+        // .showPopover is handled in AppDelegate (subscribed at launch, before this view exists —
+        // that's the whole point of the launch-hotkey fix). A view-level receiver here would be
+        // redundant and only fires once the popover has already rendered.
         // INFRA-16: Global keyboard shortcuts — wired via hidden overlay buttons in .background()
         .background(
             Group {
